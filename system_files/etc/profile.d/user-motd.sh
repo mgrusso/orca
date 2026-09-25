@@ -1,3 +1,1 @@
-#!/bin/sh
-# Disabled - Upstream Bluefin user-motd overridden by Orca OS
-exit 0
+# Orca OS - Upstream Bluefin user-motd disabled
