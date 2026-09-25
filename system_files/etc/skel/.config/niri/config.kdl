@@ -51,6 +51,7 @@ window-rule {
 binds {
     // Standard application launches
     Mod+Return { spawn "ghostty"; }
+    Mod+T      { spawn "ghostty"; }
     Mod+D { spawn "noctalia" "msg" "launcher-toggle"; }
     Mod+E { spawn "nautilus"; }
     Mod+C { spawn "noctalia" "msg" "control-center-toggle"; }
