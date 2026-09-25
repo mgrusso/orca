@@ -6,6 +6,11 @@ theme = "dark"
 font = "Inter 11"
 icon_theme = "Papirus-Dark"
 
+[wallpaper]
+enabled = true
+directory = "/usr/share/backgrounds/bluefin"
+fill_mode = "crop"
+
 [bar]
 position = "top"
 height = 36
