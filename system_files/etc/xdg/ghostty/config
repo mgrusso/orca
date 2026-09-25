@@ -1,0 +1,20 @@
+# Orca Default Ghostty Configuration
+# Unified Modern Theme aligned with Bluefin Dakota usability defaults
+
+font-family = "JetBrains Mono"
+font-size = 12
+theme = dark:catppuccin-mocha,light:catppuccin-latte
+
+window-padding-x = 14
+window-padding-y = 12
+window-decoration = false
+
+# Dakota default: disable resize overlay to prevent Wayland loops
+resize-overlay = never
+
+background-opacity = 0.92
+background-blur-radius = 20
+
+cursor-style = bar
+cursor-style-blink = true
+mouse-hide-while-typing = true
