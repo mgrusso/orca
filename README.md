@@ -24,21 +24,23 @@ A modern, immutable, scroll-tiling operating system built on **Project Bluefin (
 
 ### Option A: Bare-Metal Installation via Bootable USB / ISO (Recommended)
 
-Bootable installation images (`.iso`) are provided directly on the **[GitHub Releases](https://github.com/mgrusso/orca/releases)** page.
+Bootable installation images (`.iso.xz`) are provided directly on the **[GitHub Releases](https://github.com/mgrusso/orca/releases)** page.
 
-1. Download the latest **`orca-*-x86_64.iso`** installer image and checksum from the [Releases](https://github.com/mgrusso/orca/releases) page.
-2. Flash the ISO to a USB flash drive (8 GB or larger) using your preferred tool:
+1. Download the latest **`orca-*-x86_64.iso.xz`** compressed installer image and checksum from the [Releases](https://github.com/mgrusso/orca/releases) page.
+2. Decompress the ISO (using 7-Zip or `unxz`), or flash directly with tools supporting `.xz` compression:
    * **Fedora Media Writer** (Recommended, cross-platform)
-   * **Ventoy** (Simply copy the ISO file onto your Ventoy USB drive)
-   * **BalenaEtcher** or **Rufus**
+   * **BalenaEtcher** or **Raspberry Pi Imager** (Supports `.iso.xz` natively)
+   * **Ventoy** (Decompress with `unxz` or 7-Zip first, then copy `.iso` onto your Ventoy drive)
    * Command line (`dd`):
      ```bash
-     sudo dd if=orca-v0.2-x86_64.iso of=/dev/sdX bs=4M status=progress oflag=sync
+     unxz orca-v0.2.12-x86_64.iso.xz
+     sudo dd if=orca-v0.2.12-x86_64.iso of=/dev/sdX bs=4M status=progress oflag=sync
      ```
 3. Insert the USB drive into your computer, boot from USB (typically via `F12`, `F11`, or `Del` at startup), and follow the installer to install Orca OS.
 
 > [!NOTE]
-> **Maintainer Note:** New ISO installers can be generated on-demand via the [Build Orca ISO Installer](https://github.com/mgrusso/orca/actions/workflows/build-iso.yml) workflow and are automatically published as release assets.
+> **Maintainer Note:** New ISO installers can be generated on-demand via the [Build Orca ISO Installer](https://github.com/mgrusso/orca/actions/workflows/build-iso.yml) workflow and are automatically compressed and published as release assets.
+
 
 ---
 

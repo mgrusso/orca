@@ -87,8 +87,14 @@ jobs:
           mv -v "$ISO_SRC" "./$TARGET_ISO"
           sha256sum "./$TARGET_ISO" > "./${TARGET_ISO}-CHECKSUM"
 
+          echo "🗜️ Compressing ISO with xz (multi-threaded)..."
+          xz -T0 -3 -v -k "./$TARGET_ISO"
+          sha256sum "./${TARGET_ISO}.xz" > "./${TARGET_ISO}.xz-CHECKSUM"
+
           echo "iso_path=./$TARGET_ISO" >> $GITHUB_OUTPUT
+          echo "iso_xz_path=./${TARGET_ISO}.xz" >> $GITHUB_OUTPUT
           echo "checksum_path=./${TARGET_ISO}-CHECKSUM" >> $GITHUB_OUTPUT
+          echo "checksum_xz_path=./${TARGET_ISO}.xz-CHECKSUM" >> $GITHUB_OUTPUT
           echo "iso_filename=$TARGET_ISO" >> $GITHUB_OUTPUT
 
       - name: Upload ISO Artifact
@@ -97,7 +103,9 @@ jobs:
           name: orca-${{ inputs.image_tag }}-installer
           path: |
             ${{ steps.prepare-iso.outputs.iso_path }}
+            ${{ steps.prepare-iso.outputs.iso_xz_path }}
             ${{ steps.prepare-iso.outputs.checksum_path }}
+            ${{ steps.prepare-iso.outputs.checksum_xz_path }}
           if-no-files-found: error
           retention-days: 14
 
@@ -106,26 +114,18 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TARGET_ISO="${{ steps.prepare-iso.outputs.iso_filename }}"
-          CHECKSUM="${{ steps.prepare-iso.outputs.checksum_path }}"
+          TARGET_XZ="${{ steps.prepare-iso.outputs.iso_xz_path }}"
+          CHECKSUM_XZ="${{ steps.prepare-iso.outputs.checksum_xz_path }}"
+          TARGET_ISO="${{ steps.prepare-iso.outputs.iso_path }}"
+          CHECKSUM_ISO="${{ steps.prepare-iso.outputs.checksum_path }}"
 
-          # Always upload the checksum file
-          gh release upload "${{ inputs.image_tag }}" "$CHECKSUM" --clobber || true
+          # Upload xz-compressed ISO and checksum directly to release
+          gh release upload "${{ inputs.image_tag }}" "$TARGET_XZ" "$CHECKSUM_XZ" "$CHECKSUM_ISO" --clobber || true
 
-          # GitHub Releases enforces a strict 2 GiB (2,147,483,648 bytes) per-file limit.
+          # If the uncompressed ISO happens to be under 2 GiB, upload it too
           ISO_SIZE=$(stat -c%s "$TARGET_ISO" 2>/dev/null || stat -f%z "$TARGET_ISO")
-          if [ "$ISO_SIZE" -ge 2147483648 ]; then
-            echo "⚠️ ISO size ($ISO_SIZE bytes) exceeds GitHub Release 2 GiB limit. Splitting into 1900MB parts..."
-            split -b 1900M -d -a 2 "$TARGET_ISO" "${TARGET_ISO}.part"
-
-            # Create cross-platform reassembly helpers
-            printf '#!/bin/bash\ncat orca-*.iso.part* > orca-installer.iso\necho "Successfully reassembled orca-installer.iso!"\n' > reassemble.sh
-            chmod +x reassemble.sh
-
-            printf '@echo off\r\ncopy /b orca-*.iso.part* orca-installer.iso\r\necho Successfully reassembled orca-installer.iso!\r\n' > reassemble.bat
-
-            gh release upload "${{ inputs.image_tag }}" ${TARGET_ISO}.part* reassemble.sh reassemble.bat --clobber || true
-          else
+          if [ "$ISO_SIZE" -lt 2147483648 ]; then
             gh release upload "${{ inputs.image_tag }}" "$TARGET_ISO" --clobber || true
           fi
+
 
