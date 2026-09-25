@@ -66,8 +66,10 @@ jobs:
             -v "$PWD/output:/output" \
             quay.io/centos-bootc/bootc-image-builder:latest \
             --type anaconda-iso \
+            --rootfs btrfs \
             --config /config.toml \
             "$FULL_IMAGE"
+
 
 
       - name: Prepare ISO artifact
