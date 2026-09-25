@@ -11,6 +11,11 @@ orca-theme theme="":
     #!/usr/bin/env bash
     orca-theme "{{theme}}"
 
+# Wechsle das Hintergrundbild und synchronisiere die Niri-Akzentfarben
+orca-wallpaper-sync target="random":
+    #!/usr/bin/env bash
+    orca-wallpaper-sync "{{target}}"
+
 # Aktualisiere das gesamte System: OS-Image, Flatpaks, Homebrew und Distrobox-Container
 orca-update:
     #!/usr/bin/env bash

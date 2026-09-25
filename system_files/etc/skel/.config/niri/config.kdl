@@ -126,7 +126,7 @@ binds {
     Mod+C      { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
     Mod+N      { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
     Mod+W      { spawn "noctalia" "msg" "panel-toggle" "wallpaper"; }
-    Mod+Shift+W { spawn "noctalia" "msg" "wallpaper-random"; }
+    Mod+Shift+W { spawn "orca-wallpaper-sync" "random"; }
 
 
     // Window management

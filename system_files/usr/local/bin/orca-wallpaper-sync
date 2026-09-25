@@ -1,0 +1,60 @@
+#!/bin/bash
+set -euo pipefail
+
+# Orca OS - Dynamic Wallpaper & Theme Accent Synchronizer
+
+TARGET="${1:-random}"
+WALLPAPER=""
+
+if [ "$TARGET" = "random" ]; then
+    WALLPAPER=$(find /usr/share/backgrounds/bluefin/ -type f \( -name '*.jxl' -o -name '*.png' -o -name '*.jpg' -o -name '*.webp' \) 2>/dev/null | shuf -n 1 || true)
+elif [ -f "$TARGET" ]; then
+    WALLPAPER="$TARGET"
+fi
+
+if [ -z "$WALLPAPER" ]; then
+    echo "❌ Kein Hintergrundbild gefunden."
+    exit 1
+fi
+
+echo "🐋 Synchronisiere Wallpaper: $WALLPAPER"
+
+# 1. Update Noctalia Wallpaper
+if command -v noctalia >/dev/null 2>&1; then
+    noctalia msg wallpaper-set "$WALLPAPER" 2>/dev/null || true
+fi
+
+# 2. Extract Accent Color
+ACCENT=$(python3 -c "
+import sys
+try:
+    from PIL import Image
+    img = Image.open('$WALLPAPER')
+    img = img.resize((50, 50))
+    colors = img.getcolors(50 * 50) or []
+    colors.sort(key=lambda c: c[0], reverse=True)
+    chosen = None
+    for count, col in colors:
+        r, g, b = col[:3]
+        if max(r, g, b) > 90 and (max(r, g, b) - min(r, g, b)) > 35:
+            chosen = f'#{r:02x}{g:02x}{b:02x}'
+            break
+    print(chosen if chosen else '#89b4fa')
+except Exception:
+    print('#89b4fa')
+" 2>/dev/null || echo "#89b4fa")
+
+echo "🎨 Erkannte Akzentfarbe: $ACCENT"
+
+# 3. Synchronize Niri focus ring
+NIRI_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/niri/config.kdl"
+if [ -f "$NIRI_CONF" ]; then
+    sed -i -E "s/active-color \"#[0-9a-fA-F]{6}\"/active-color \"$ACCENT\"/g" "$NIRI_CONF" || true
+fi
+
+# 4. Desktop Notification
+if command -v notify-send >/dev/null 2>&1; then
+    notify-send "Orca Wallpaper Sync" "Wallpaper gewechselt & Akzentfarbe ($ACCENT) synchronisiert." -i preferences-desktop-wallpaper
+fi
+
+echo "✨ Wallpaper und Niri-Akzentfarbe erfolgreich synchronisiert!"

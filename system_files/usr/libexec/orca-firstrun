@@ -63,8 +63,9 @@ if [ -f "/etc/skel/.config/fastfetch/config.jsonc" ]; then
     cp -f "/etc/skel/.config/fastfetch/config.jsonc" "$HOME/.config/fastfetch/config.jsonc"
 fi
 
-# 6. Ensure ublue-user-setup is masked in the user session to prevent false lockscreen warnings
+# 6. Ensure ublue-user-setup is masked and disable upstream Bluefin user-motd
 systemctl --user mask ublue-user-setup.service 2>/dev/null || true
+touch "$HOME/.config/no-show-user-motd"
 
 # 7. Ensure Flathub remote exists and apply dark theme override for Flatpak Firefox
 if command -v flatpak >/dev/null 2>&1; then

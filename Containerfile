@@ -73,7 +73,12 @@ RUN sed -i -e 's/^NAME=.*/NAME="Orca"/' \
            -e 's/^PRETTY_NAME=.*/PRETTY_NAME="Orca (Bluefin)"/' \
            /usr/lib/os-release
 
-# Clean upstream Bluefin MOTD banners and neutralize umotd binary
+# Clean upstream Bluefin MOTD banners and neutralize umotd & user-motd
 RUN rm -rf /etc/motd.d/* /etc/issue.d/* 2>/dev/null || true && \
-    if [ -f /usr/bin/umotd ]; then printf '#!/bin/sh\nexit 0\n' > /usr/bin/umotd && chmod +x /usr/bin/umotd; fi
+    if [ -f /usr/bin/umotd ]; then printf '#!/bin/sh\nexit 0\n' > /usr/bin/umotd && chmod +x /usr/bin/umotd; fi && \
+    if [ -f /usr/libexec/user-motd ]; then printf '#!/bin/sh\nexit 0\n' > /usr/libexec/user-motd && chmod +x /usr/libexec/user-motd; fi
+
+# Configure Orca Plymouth boot splash theme
+RUN cp -rn /usr/share/plymouth/themes/spinner/* /usr/share/plymouth/themes/orca/ 2>/dev/null || true && \
+    plymouth-set-default-theme orca || true
 
