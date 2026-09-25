@@ -35,19 +35,19 @@ A customized, immutable (atomic/bootc) operating system image based on **Project
 
 ## Installation & Rebase on Laptop
 
-Run the following commands on your current system (e.g. Bluefin / Fedora Atomic):
+Run the following commands on your laptop (bootc-enabled system like Bluefin):
 
 ```bash
 # 1. Check current deployment status
-rpm-ostree status
+sudo bootc status
 
-# 2. Rebase onto your Orca image
-rpm-ostree rebase ostree-unverified-registry:ghcr.io/mgrusso/orca:latest
+# 2. Switch to your Orca image
+sudo bootc switch ghcr.io/mgrusso/orca:latest
 
 # 3. Reboot into Orca
-systemctl reboot
+sudo systemctl reboot
 ```
 
 > [!TIP]
 > **Rollback Protection:**
-> Because Orca is built on OSTree / bootc, your previous Bluefin deployment remains available as a fallback in the GRUB boot menu. You can roll back at any time with `rpm-ostree rollback`.
+> Because Orca is an immutable bootc image, your previous deployment remains available as a fallback in the boot menu. You can roll back at any time with `sudo bootc rollback`.
