@@ -47,3 +47,8 @@ COPY system_files/ /
 
 # Compile gsettings schema overrides for system-wide dark mode & theming
 RUN glib-compile-schemas /usr/share/glib-2.0/schemas/
+
+# Brand the operating system as Orca in os-release for bootloader, hostnamectl, and fastfetch
+RUN sed -i -e 's/^NAME=.*/NAME="Orca"/' \
+           -e 's/^PRETTY_NAME=.*/PRETTY_NAME="Orca (Bluefin)"/' \
+           /usr/lib/os-release
