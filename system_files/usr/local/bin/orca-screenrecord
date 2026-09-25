@@ -1,0 +1,32 @@
+#!/bin/bash
+set -euo pipefail
+
+# Orca OS Screen Recording Utility (wf-recorder)
+REC_DIR="${XDG_VIDEOS_DIR:-$HOME/Videos}/Recordings"
+PID_FILE="/tmp/orca-wf-recorder.pid"
+
+if pidof wf-recorder >/dev/null 2>&1 || [ -f "$PID_FILE" ]; then
+    # Stop active recording cleanly
+    killall -SIGINT wf-recorder 2>/dev/null || true
+    rm -f "$PID_FILE"
+    if command -v notify-send >/dev/null 2>&1; then
+        notify-send "Orca Screen Recorder" "Aufnahme beendet und gespeichert." -i video-x-generic
+    fi
+    exit 0
+fi
+
+mkdir -p "$REC_DIR"
+FILENAME="$REC_DIR/Recording_$(date +%Y-%m-%d_%H-%M-%S).mp4"
+
+GEOM=$(slurp 2>/dev/null || true)
+if [ -z "$GEOM" ]; then
+    exit 0
+fi
+
+if command -v notify-send >/dev/null 2>&1; then
+    notify-send "Orca Screen Recorder" "Aufnahme gestartet... (Super+Shift+R zum Beenden)" -i media-record
+fi
+
+wf-recorder -g "$GEOM" -f "$FILENAME" &
+REC_PID=$!
+echo "$REC_PID" > "$PID_FILE"

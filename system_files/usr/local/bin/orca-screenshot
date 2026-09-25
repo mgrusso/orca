@@ -1,0 +1,46 @@
+#!/bin/bash
+set -euo pipefail
+
+# Orca OS Screenshot Utility (grim + slurp + satty/swappy)
+SHOT_DIR="${XDG_PICTURES_DIR:-$HOME/Bilder}/Screenshots"
+mkdir -p "$SHOT_DIR"
+FILENAME="$SHOT_DIR/Screenshot_$(date +%Y-%m-%d_%H-%M-%S).png"
+
+MODE="${1:-area}"
+
+case "$MODE" in
+    screen|full)
+        if command -v satty >/dev/null 2>&1; then
+            grim - | satty --filename - --fullscreen --output-filename "$FILENAME"
+        elif command -v swappy >/dev/null 2>&1; then
+            grim - | swappy -f - -o "$FILENAME"
+        else
+            grim "$FILENAME"
+            if command -v wl-copy >/dev/null 2>&1; then
+                wl-copy < "$FILENAME"
+            fi
+            if command -v notify-send >/dev/null 2>&1; then
+                notify-send "Screenshot erstellt" "Gespeichert unter $FILENAME und in Zwischenablage kopiert." -i camera-photo
+            fi
+        fi
+        ;;
+    area|region|*)
+        GEOM=$(slurp 2>/dev/null || true)
+        if [ -z "$GEOM" ]; then
+            exit 0
+        fi
+        if command -v satty >/dev/null 2>&1; then
+            grim -g "$GEOM" - | satty --filename - --fullscreen --output-filename "$FILENAME"
+        elif command -v swappy >/dev/null 2>&1; then
+            grim -g "$GEOM" - | swappy -f - -o "$FILENAME"
+        else
+            grim -g "$GEOM" "$FILENAME"
+            if command -v wl-copy >/dev/null 2>&1; then
+                wl-copy < "$FILENAME"
+            fi
+            if command -v notify-send >/dev/null 2>&1; then
+                notify-send "Screenshot erstellt" "Gespeichert unter $FILENAME und in Zwischenablage kopiert." -i camera-photo
+            fi
+        fi
+        ;;
+esac
