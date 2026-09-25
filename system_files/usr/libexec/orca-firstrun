@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Orca First-Run Desktop Setup & Migration Helper
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/orca"
-STAMP_FILE="${STATE_DIR}/firstrun-v0.1.3.done"
+STAMP_FILE="${STATE_DIR}/firstrun-v0.1.4.done"
 
 # Only run once per target release
 if [ -f "$STAMP_FILE" ]; then
@@ -12,22 +12,58 @@ fi
 
 mkdir -p "$STATE_DIR"
 
-# Clean stale user configs that block system-wide Orca fallbacks
+# Clean stale legacy configurations
 rm -rf "$HOME/.config/niri" "$HOME/.config/noctalia" "$HOME/.local/state/noctalia" "$HOME/.config/hypr" 2>/dev/null || true
 
-# Seed modern Ghostty configuration with Catppuccin Mocha & transparency
+# 1. Setup Noctalia Shell State to completely prevent Setup Wizard from interfering
+mkdir -p "$HOME/.local/state/noctalia"
+touch "$HOME/.local/state/noctalia/.setup-complete"
+
+cat << 'EOF' > "$HOME/.local/state/noctalia/settings.toml"
+[shell]
+setup_wizard_enabled = false
+
+[wallpaper]
+enabled = true
+directory = "/usr/share/backgrounds/bluefin"
+directory_dark = "/usr/share/backgrounds/bluefin"
+fill_mode = "crop"
+
+[wallpaper.default]
+path = "/usr/share/backgrounds/bluefin/bluefin_night.jxl"
+EOF
+
+# 2. Seed fresh Noctalia user configuration
+mkdir -p "$HOME/.config/noctalia"
+if [ -f "/etc/skel/.config/noctalia/config.toml" ]; then
+    cp -f "/etc/skel/.config/noctalia/config.toml" "$HOME/.config/noctalia/config.toml"
+fi
+
+# 3. Seed Niri scroll-tiling configuration (with Ghostty opacity window rules & wallpaper autostart)
+mkdir -p "$HOME/.config/niri"
+if [ -f "/etc/skel/.config/niri/config.kdl" ]; then
+    cp -f "/etc/skel/.config/niri/config.kdl" "$HOME/.config/niri/config.kdl"
+fi
+
+# 4. Seed Ghostty terminal configuration (Catppuccin Mocha, opacity 0.80, blur and cell opacity)
 mkdir -p "$HOME/.config/ghostty"
 if [ -f "/etc/skel/.config/ghostty/config" ]; then
     cp -f "/etc/skel/.config/ghostty/config" "$HOME/.config/ghostty/config"
 fi
 
-# Ensure ublue-user-setup is masked in the user systemd manager to prevent false lockscreen warnings
+# 5. Seed Hyprland configuration
+mkdir -p "$HOME/.config/hypr"
+if [ -f "/etc/skel/.config/hypr/hyprland.conf" ]; then
+    cp -f "/etc/skel/.config/hypr/hyprland.conf" "$HOME/.config/hypr/hyprland.conf"
+fi
+
+# 6. Ensure ublue-user-setup is masked in the user session to prevent false lockscreen warnings
 systemctl --user mask ublue-user-setup.service 2>/dev/null || true
 
-# Apply dark theme override for Flatpak Firefox to ensure unified look
+# 7. Apply dark theme override for Flatpak Firefox to ensure unified look
 if command -v flatpak >/dev/null 2>&1; then
     flatpak override --user --env=GTK_THEME=adw-gtk3-dark org.mozilla.firefox 2>/dev/null || true
 fi
 
-# Create stamp file to prevent re-running on subsequent boots
+# 8. Mark first run completed
 touch "$STAMP_FILE"

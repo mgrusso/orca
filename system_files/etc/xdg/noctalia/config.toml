@@ -6,10 +6,17 @@ theme = "dark"
 font = "Inter 11"
 icon_theme = "Papirus-Dark"
 
+[shell]
+setup_wizard_enabled = false
+
 [wallpaper]
 enabled = true
 directory = "/usr/share/backgrounds/bluefin"
+directory_dark = "/usr/share/backgrounds/bluefin"
 fill_mode = "crop"
+
+[wallpaper.default]
+path = "/usr/share/backgrounds/bluefin/bluefin_night.jxl"
 
 [bar]
 position = "top"
@@ -31,7 +38,7 @@ modules = ["media", "power_profile", "network", "battery", "control_center_toggl
 
 [launcher]
 icon = "distributor-logo-fedora"
-command = "noctalia msg launcher-toggle"
+command = "noctalia msg panel-toggle launcher"
 
 [power_profile]
 # Native power-profiles-daemon integration

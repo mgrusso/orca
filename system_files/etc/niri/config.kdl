@@ -5,9 +5,7 @@
 spawn-at-startup "/usr/libexec/polkit-mate-authentication-agent-1"
 spawn-at-startup "noctalia"
 spawn-at-startup "bash" "-c" "if [ ! -f ~/.config/ghostty/config ]; then mkdir -p ~/.config/ghostty && cp /etc/skel/.config/ghostty/config ~/.config/ghostty/config; fi"
-spawn-at-startup "bash" "-c" "sleep 1 && noctalia msg wallpaper set $(find /usr/share/backgrounds/bluefin/ -type f \\( -name '*.jxl' -o -name '*.png' -o -name '*.jpg' -o -name '*.webp' \\) | grep -i night | head -n 1 || find /usr/share/backgrounds/bluefin/ -type f | head -n 1)"
-
-
+spawn-at-startup "bash" "-c" "sleep 1 && (noctalia msg wallpaper-set $(find /usr/share/backgrounds/bluefin/ -type f \\( -name '*.jxl' -o -name '*.png' -o -name '*.jpg' -o -name '*.webp' \\) | grep -i night | head -n 1 || find /usr/share/backgrounds/bluefin/ -type f | head -n 1) || true)"
 
 input {
     keyboard {
@@ -51,6 +49,14 @@ window-rule {
     clip-to-geometry true
 }
 
+window-rule {
+    match app-id=r#"ghostty"#
+    opacity 0.82
+    background-effect {
+        blur true
+    }
+}
+
 // Keybindings
 binds {
     // Standard application launches & Dakota/GNOME parity
@@ -63,7 +69,7 @@ binds {
     Mod+C      { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
     Mod+N      { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
     Mod+W      { spawn "noctalia" "msg" "panel-toggle" "wallpaper"; }
-    Mod+Shift+W { spawn "noctalia" "msg" "wallpaper" "random" "all"; }
+    Mod+Shift+W { spawn "noctalia" "msg" "wallpaper-random"; }
 
 
     // Window management
