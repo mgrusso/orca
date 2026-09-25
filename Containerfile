@@ -82,3 +82,7 @@ RUN rm -rf /etc/motd.d/* /etc/issue.d/* 2>/dev/null || true && \
 RUN cp -rn /usr/share/plymouth/themes/spinner/* /usr/share/plymouth/themes/orca/ 2>/dev/null || true && \
     plymouth-set-default-theme orca || true
 
+# Make /etc/orca configuration directory writable so release channels can be managed without sudo
+RUN mkdir -p /etc/orca && chmod 777 /etc/orca && ( [ -f /etc/orca/release-channel ] && chmod 666 /etc/orca/release-channel || true )
+
+

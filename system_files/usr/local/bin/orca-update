@@ -60,7 +60,7 @@ if command -v rpm-ostree >/dev/null 2>&1; then
             REBASE_SPEC="ostree-image-signed:docker://$TARGET_IMAGE"
         fi
 
-        REBASE_OUTPUT=$(sudo rpm-ostree rebase "$REBASE_SPEC" 2>&1 || true)
+        REBASE_OUTPUT=$(rpm-ostree rebase "$REBASE_SPEC" 2>&1 || true)
         echo "$REBASE_OUTPUT"
 
         if echo "$REBASE_OUTPUT" | grep -qi "unchanged"; then
@@ -71,10 +71,10 @@ if command -v rpm-ostree >/dev/null 2>&1; then
 elif command -v bootc >/dev/null 2>&1; then
     CURRENT_IMG=$(bootc status 2>/dev/null | grep -E "image:|Image:" | head -n 1 | awk '{print $NF}' || true)
     if [[ "$CURRENT_IMG" == *":$TARGET_TAG" ]]; then
-        sudo bootc upgrade || true
+        bootc upgrade || true
     else
         echo "Switching base image to channel '$TARGET_TAG'..."
-        sudo bootc switch "$TARGET_IMAGE" || true
+        bootc switch "$TARGET_IMAGE" || true
     fi
 else
     echo "Neither rpm-ostree nor bootc detected (skipped)."
