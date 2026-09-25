@@ -4,13 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       image_tag:
-        description: 'Image tag to package into the ISO (e.g. v0.2, v0.2.6, latest)'
+        description: 'Image tag to package into the ISO (e.g. v0.2, v0.2.10, latest)'
         required: true
         default: 'v0.2'
-      fedora_version:
-        description: 'Base Fedora version'
-        required: true
-        default: '41'
 
 env:
   IMAGE_NAME: "orca"
@@ -37,25 +33,64 @@ jobs:
           echo "IMAGE_REGISTRY=${IMAGE_REGISTRY,,}" >> $GITHUB_ENV
           echo "IMAGE_NAME=${IMAGE_NAME,,}" >> $GITHUB_ENV
 
-      - name: Build bootable ISO installer
-        id: build-iso
-        uses: jasonn3/build-container-installer@main
+      - name: Log in to GHCR
+        uses: redhat-actions/podman-login@v1
         with:
-          arch: x86_64
-          image_name: ${{ env.IMAGE_NAME }}
-          image_repo: ${{ env.IMAGE_REGISTRY }}
-          image_tag: ${{ inputs.image_tag }}
-          version: ${{ inputs.fedora_version }}
-          variant: Silverblue
-          iso_name: orca-${{ inputs.image_tag }}-x86_64.iso
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create bootc-image-builder configuration
+        run: |
+          mkdir -p output
+          cat << 'EOF' > config.toml
+          [customizations.installer.kickstart]
+          contents = ""
+          EOF
+
+      - name: Build bootable ISO installer via bootc-image-builder
+        run: |
+          FULL_IMAGE="${IMAGE_REGISTRY}/${IMAGE_NAME}:${{ inputs.image_tag }}"
+          echo "Building bootable ISO for: $FULL_IMAGE"
+
+          sudo podman run \
+            --rm \
+            --privileged \
+            --pull=newer \
+            --security-opt label=type:unconfined_t \
+            -v /var/lib/containers/storage:/var/lib/containers/storage \
+            -v "$PWD/config.toml:/config.toml:ro" \
+            -v "$PWD/output:/output" \
+            quay.io/centos-bootc/bootc-image-builder:latest \
+            --type anaconda-iso \
+            --config /config.toml \
+            "$FULL_IMAGE"
+
+      - name: Prepare ISO artifact
+        id: prepare-iso
+        run: |
+          ISO_SRC=$(find output/ -type f \( -name "*.iso" -o -name "install.iso" -o -name "boot.iso" \) | head -n 1)
+          if [ -z "$ISO_SRC" ] || [ ! -f "$ISO_SRC" ]; then
+            echo "❌ Error: No ISO file generated in output directory!"
+            ls -laR output/
+            exit 1
+          fi
+
+          TARGET_ISO="orca-${{ inputs.image_tag }}-x86_64.iso"
+          mv -v "$ISO_SRC" "./$TARGET_ISO"
+          sha256sum "./$TARGET_ISO" > "./${TARGET_ISO}-CHECKSUM"
+
+          echo "iso_path=./$TARGET_ISO" >> $GITHUB_OUTPUT
+          echo "checksum_path=./${TARGET_ISO}-CHECKSUM" >> $GITHUB_OUTPUT
+          echo "iso_filename=$TARGET_ISO" >> $GITHUB_OUTPUT
 
       - name: Upload ISO Artifact
         uses: actions/upload-artifact@v4
         with:
           name: orca-${{ inputs.image_tag }}-installer
           path: |
-            ${{ steps.build-iso.outputs.iso_path }}
-            ${{ steps.build-iso.outputs.iso_path }}-CHECKSUM
+            ${{ steps.prepare-iso.outputs.iso_path }}
+            ${{ steps.prepare-iso.outputs.checksum_path }}
           if-no-files-found: error
           retention-days: 14
 
@@ -64,5 +99,4 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload "${{ inputs.image_tag }}" "${{ steps.build-iso.outputs.iso_path }}" "${{ steps.build-iso.outputs.iso_path }}-CHECKSUM" --clobber || true
-
+          gh release upload "${{ inputs.image_tag }}" "${{ steps.prepare-iso.outputs.iso_path }}" "${{ steps.prepare-iso.outputs.checksum_path }}" --clobber || true
