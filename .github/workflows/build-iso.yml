@@ -58,3 +58,11 @@ jobs:
             ${{ steps.build-iso.outputs.iso_path }}-CHECKSUM
           if-no-files-found: error
           retention-days: 14
+
+      - name: Upload ISO to GitHub Release
+        if: startsWith(inputs.image_tag, 'v')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ inputs.image_tag }}" "${{ steps.build-iso.outputs.iso_path }}" "${{ steps.build-iso.outputs.iso_path }}-CHECKSUM" --clobber || true
+

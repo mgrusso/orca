@@ -24,16 +24,21 @@ A modern, immutable, scroll-tiling operating system built on **Project Bluefin (
 
 ### Option A: Bare-Metal Installation via Bootable USB / ISO (Recommended)
 
-Orca provides automated bootable installer ISOs built directly from container images via GitHub Actions:
+Bootable installation images (`.iso`) are provided directly on the **[GitHub Releases](https://github.com/mgrusso/orca/releases)** page.
 
-1. Head over to the [GitHub Actions](https://github.com/mgrusso/orca/actions/workflows/build-iso.yml) tab and select **Build Orca ISO Installer**.
-2. Click **Run workflow** (select target image tag, e.g. `v0.2` or `latest`).
-3. Download the generated ISO artifact from the workflow run (or grab it from [GitHub Releases](https://github.com/mgrusso/orca/releases)).
-4. Flash the ISO to a USB drive using **Fedora Media Writer**, **Raspberry Pi Imager**, **Rufus**, **Ventoy**, or `dd`:
-   ```bash
-   sudo dd if=orca-v0.2-x86_64.iso of=/dev/sdX bs=4M status=progress oflag=sync
-   ```
-5. Boot from the USB drive and follow the standard Fedora Anaconda installer to install Orca OS to your drive.
+1. Download the latest **`orca-*-x86_64.iso`** installer image and checksum from the [Releases](https://github.com/mgrusso/orca/releases) page.
+2. Flash the ISO to a USB flash drive (8 GB or larger) using your preferred tool:
+   * **Fedora Media Writer** (Recommended, cross-platform)
+   * **Ventoy** (Simply copy the ISO file onto your Ventoy USB drive)
+   * **BalenaEtcher** or **Rufus**
+   * Command line (`dd`):
+     ```bash
+     sudo dd if=orca-v0.2-x86_64.iso of=/dev/sdX bs=4M status=progress oflag=sync
+     ```
+3. Insert the USB drive into your computer, boot from USB (typically via `F12`, `F11`, or `Del` at startup), and follow the installer to install Orca OS.
+
+> [!NOTE]
+> **Maintainer Note:** New ISO installers can be generated on-demand via the [Build Orca ISO Installer](https://github.com/mgrusso/orca/actions/workflows/build-iso.yml) workflow and are automatically published as release assets.
 
 ---
 
