@@ -1,6 +1,16 @@
 # Orca OS Custom Management Recipes
 # Powering 'ujust orca-*' commands
 
+# Wechsle den Orca OS Release-Channel (z. B. '0.2', '0.1' oder 'latest')
+orca-release-channel channel="":
+    #!/usr/bin/env bash
+    orca-release-channel "{{channel}}"
+
+# Schalte das Farbschema synchron zwischen Catppuccin Mocha ('dark') und Latte ('light') um
+orca-theme theme="":
+    #!/usr/bin/env bash
+    orca-theme "{{theme}}"
+
 # Aktualisiere das gesamte System: OS-Image, Flatpaks, Homebrew und Distrobox-Container
 orca-update:
     #!/usr/bin/env bash

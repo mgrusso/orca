@@ -1,0 +1,86 @@
+#!/bin/bash
+set -euo pipefail
+
+# Orca OS Release Channel Switcher
+
+REGISTRY="ghcr.io/mgrusso/orca"
+
+# 1. Determine current deployed channel
+CURRENT_CHANNEL="unbekannt"
+if command -v bootc >/dev/null 2>&1; then
+    CURRENT_IMG=$(bootc status 2>/dev/null | grep -E "image:|Image:" | head -n 1 | awk '{print $NF}' || true)
+    CURRENT_CHANNEL=$(echo "$CURRENT_IMG" | awk -F: '{print $NF}')
+fi
+if [ -z "$CURRENT_CHANNEL" ] || [ "$CURRENT_CHANNEL" = "unbekannt" ]; then
+    if command -v rpm-ostree >/dev/null 2>&1; then
+        CURRENT_IMG=$(rpm-ostree status 2>/dev/null | grep -E "● ostree" | head -n 1 | awk '{print $NF}' || true)
+        CURRENT_CHANNEL=$(echo "$CURRENT_IMG" | awk -F: '{print $NF}')
+    fi
+fi
+[ -z "$CURRENT_CHANNEL" ] && CURRENT_CHANNEL="latest"
+
+TARGET_INPUT="${1:-}"
+
+if [ -z "$TARGET_INPUT" ]; then
+    echo "🐋 Orca OS — Release-Channel Konfiguration"
+    echo "=========================================="
+    echo "Aktuell aktiver Channel: [ $CURRENT_CHANNEL ]"
+    echo ""
+    echo "Verfügbare Channels:"
+    echo "  • 0.1     (oder v0.1)   -> Wartungs-Channel: Immer das letzte v0.1.x Release"
+    echo "  • 0.2     (oder v0.2)   -> Aktueller Channel: Immer das letzte v0.2.x Release"
+    echo "  • latest                -> Bleeding Edge (Täglicher Entwicklungs-Stand von main)"
+    echo ""
+    read -p "Welchen Release-Channel möchtest du nutzen? (z.B. 0.2 oder latest): " TARGET_INPUT
+fi
+
+if [ -z "$TARGET_INPUT" ]; then
+    echo "Kein Channel angegeben. Vorgang abgebrochen."
+    exit 0
+fi
+
+# Normalize target channel
+case "$TARGET_INPUT" in
+    latest|dev|edge)
+        TARGET_TAG="latest"
+        CHANNEL_NAME="latest (Bleeding Edge Entwicklung)"
+        ;;
+    0.1|v0.1)
+        TARGET_TAG="v0.1"
+        CHANNEL_NAME="v0.1 (Wartungs-Channel)"
+        ;;
+    0.2|v0.2)
+        TARGET_TAG="v0.2"
+        CHANNEL_NAME="v0.2 (Aktueller Standard-Channel)"
+        ;;
+    0.3|v0.3)
+        TARGET_TAG="v0.3"
+        CHANNEL_NAME="v0.3 (Zukünftiger Meilenstein)"
+        ;;
+    *)
+        # Allow any custom tag or version (e.g. specific v0.1.9)
+        TARGET_TAG="$TARGET_INPUT"
+        CHANNEL_NAME="$TARGET_TAG"
+        ;;
+esac
+
+echo ""
+echo "Wechsle Release-Channel auf: $CHANNEL_NAME ($REGISTRY:$TARGET_TAG)..."
+
+if command -v bootc >/dev/null 2>&1; then
+    sudo bootc switch "$REGISTRY:$TARGET_TAG"
+elif command -v rpm-ostree >/dev/null 2>&1; then
+    # Detect transport (ostree-image-signed vs ostree-unverified-registry)
+    if rpm-ostree status 2>/dev/null | grep -q "ostree-image-signed"; then
+        sudo rpm-ostree rebase "ostree-image-signed:docker://$REGISTRY:$TARGET_TAG"
+    else
+        sudo rpm-ostree rebase "ostree-unverified-registry:$REGISTRY:$TARGET_TAG"
+    fi
+else
+    echo "❌ Fehler: Weder bootc noch rpm-ostree auf dem System gefunden."
+    exit 1
+fi
+
+echo ""
+echo "✨ Release-Channel erfolgreich auf '$TARGET_TAG' umgestellt!"
+echo "🔄 Führe 'sudo systemctl reboot' aus, um das neue Image zu starten."

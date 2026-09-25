@@ -1,0 +1,104 @@
+#!/bin/bash
+set -euo pipefail
+
+# Orca OS Theme Switcher (Catppuccin Mocha vs. Catppuccin Latte)
+
+THEME="${1:-}"
+
+if [ -z "$THEME" ]; then
+    CURRENT="dark"
+    if command -v gsettings >/dev/null 2>&1; then
+        CURRENT_SCHEME=$(gsettings get org.gnome.desktop.interface color-scheme 2>/dev/null || true)
+        if [[ "$CURRENT_SCHEME" =~ light ]]; then
+            CURRENT="light"
+        fi
+    fi
+    echo "🐋 Orca OS — Desktop Theme Switcher"
+    echo "====================================="
+    echo "Aktuelles Farbschema: [ $CURRENT ]"
+    echo ""
+    read -p "Möchtest du zu 'dark' (Catppuccin Mocha) oder 'light' (Catppuccin Latte) wechseln? [dark/light]: " THEME
+fi
+
+case "$THEME" in
+    dark|mocha|dunkel)
+        echo "🎨 Schalte um auf Dark Mode (Catppuccin Mocha)..."
+
+        # 1. GNOME / GTK Settings
+        if command -v gsettings >/dev/null 2>&1; then
+            gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' || true
+            gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3-dark' || true
+        fi
+
+        # 2. Ghostty Terminal
+        GHOSTTY_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/config"
+        if [ -f "$GHOSTTY_CONF" ]; then
+            if grep -q "theme =" "$GHOSTTY_CONF"; then
+                sed -i 's/^theme = .*/theme = catppuccin-mocha/' "$GHOSTTY_CONF"
+            else
+                echo "theme = catppuccin-mocha" >> "$GHOSTTY_CONF"
+            fi
+        fi
+
+        # 3. Niri Focus Ring (Mauve #cba6f7)
+        NIRI_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/niri/config.kdl"
+        if [ -f "$NIRI_CONF" ]; then
+            sed -i 's/active-color "#[0-9a-fA-F]*"/active-color "#cba6f7"/g' "$NIRI_CONF" || true
+        fi
+
+        # 4. Noctalia Shell
+        if command -v noctalia >/dev/null 2>&1; then
+            noctalia msg color-scheme dark 2>/dev/null || true
+        fi
+
+        # 5. Flatpak Firefox
+        if command -v flatpak >/dev/null 2>&1; then
+            flatpak override --user --env=GTK_THEME=adw-gtk3-dark org.mozilla.firefox 2>/dev/null || true
+        fi
+
+        echo "✨ Dark Mode (Catppuccin Mocha) erfolgreich aktiviert!"
+        ;;
+
+    light|latte|hell)
+        echo "🎨 Schalte um auf Light Mode (Catppuccin Latte)..."
+
+        # 1. GNOME / GTK Settings
+        if command -v gsettings >/dev/null 2>&1; then
+            gsettings set org.gnome.desktop.interface color-scheme 'prefer-light' || true
+            gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3' || true
+        fi
+
+        # 2. Ghostty Terminal
+        GHOSTTY_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/config"
+        if [ -f "$GHOSTTY_CONF" ]; then
+            if grep -q "theme =" "$GHOSTTY_CONF"; then
+                sed -i 's/^theme = .*/theme = catppuccin-latte/' "$GHOSTTY_CONF"
+            else
+                echo "theme = catppuccin-latte" >> "$GHOSTTY_CONF"
+            fi
+        fi
+
+        # 3. Niri Focus Ring (Latte Mauve #8839ef)
+        NIRI_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/niri/config.kdl"
+        if [ -f "$NIRI_CONF" ]; then
+            sed -i 's/active-color "#[0-9a-fA-F]*"/active-color "#8839ef"/g' "$NIRI_CONF" || true
+        fi
+
+        # 4. Noctalia Shell
+        if command -v noctalia >/dev/null 2>&1; then
+            noctalia msg color-scheme light 2>/dev/null || true
+        fi
+
+        # 5. Flatpak Firefox
+        if command -v flatpak >/dev/null 2>&1; then
+            flatpak override --user --env=GTK_THEME=adw-gtk3 org.mozilla.firefox 2>/dev/null || true
+        fi
+
+        echo "✨ Light Mode (Catppuccin Latte) erfolgreich aktiviert!"
+        ;;
+
+    *)
+        echo "❌ Ungültiges Farbschema: '$THEME'. Verwende 'dark' oder 'light'."
+        exit 1
+        ;;
+esac
