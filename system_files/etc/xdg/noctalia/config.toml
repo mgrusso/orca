@@ -18,23 +18,14 @@ fill_mode = "crop"
 [wallpaper.default]
 path = "/usr/share/backgrounds/bluefin/bluefin_night.jxl"
 
-[bar]
+[bar.top]
 position = "top"
-height = 36
-margin = [8, 12, 0, 12]
-spacing = 8
-background = "#181825ee"
-blur = true
-border_radius = 12
-
-[bar.left]
-modules = ["launcher", "workspaces", "window_title"]
-
-[bar.center]
-modules = ["clock"]
-
-[bar.right]
-modules = ["media", "power_profile", "network", "battery", "control_center_toggle"]
+thickness = 36
+background_opacity = 0.93
+radius = 12
+start = ["launcher", "wallpaper", "workspaces"]
+center = ["clock"]
+end = ["media", "power_profile", "network", "battery", "control_center_toggle"]
 
 [launcher]
 icon = "distributor-logo-fedora"

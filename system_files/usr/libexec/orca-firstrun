@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Orca First-Run Desktop Setup & Migration Helper
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/orca"
-STAMP_FILE="${STATE_DIR}/firstrun-v0.1.4.done"
+STAMP_FILE="${STATE_DIR}/firstrun-v0.1.5.done"
 
 # Only run once per target release
 if [ -f "$STAMP_FILE" ]; then

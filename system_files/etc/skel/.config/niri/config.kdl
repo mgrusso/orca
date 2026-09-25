@@ -7,6 +7,31 @@ spawn-at-startup "noctalia"
 spawn-at-startup "bash" "-c" "if [ ! -f ~/.config/ghostty/config ]; then mkdir -p ~/.config/ghostty && cp /etc/skel/.config/ghostty/config ~/.config/ghostty/config; fi"
 spawn-at-startup "bash" "-c" "sleep 1 && (noctalia msg wallpaper-set $(find /usr/share/backgrounds/bluefin/ -type f \\( -name '*.jxl' -o -name '*.png' -o -name '*.jpg' -o -name '*.webp' \\) | grep -i night | head -n 1 || find /usr/share/backgrounds/bluefin/ -type f | head -n 1) || true)"
 
+// Layer rules for Noctalia wallpaper & backdrop
+layer-rule {
+    match namespace="^noctalia-wallpaper"
+    place-within-backdrop true
+}
+
+layer-rule {
+    match namespace="^noctalia-(bar-[^\"]+|notification|dock|panel|attached-panel|osd)$"
+    background-effect {
+        xray false
+    }
+}
+
+// Global blur settings
+blur {
+    passes 2
+    offset 3.0
+    noise 0.03
+    saturation 1.0
+}
+
+debug {
+    honor-xdg-activation-with-invalid-serial
+}
+
 input {
     keyboard {
         xkb {
@@ -21,6 +46,7 @@ input {
 }
 
 layout {
+    background-color "transparent"
     gaps 10
     center-focused-column "never"
 
@@ -50,10 +76,27 @@ window-rule {
 }
 
 window-rule {
+    match app-id="dev.noctalia.Noctalia"
+    open-floating true
+    default-column-width { fixed 1080; }
+    default-window-height { fixed 920; }
+}
+
+window-rule {
+    match app-id=r#"^com\.mitchellh\.ghostty$"#
+    opacity 0.82
+    background-effect {
+        blur true
+        xray false
+    }
+}
+
+window-rule {
     match app-id=r#"ghostty"#
     opacity 0.82
     background-effect {
         blur true
+        xray false
     }
 }
 
