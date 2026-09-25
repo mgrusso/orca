@@ -41,12 +41,23 @@ jobs:
       - name: Determine image tags
         id: tags
         run: |
-          TAGS="latest"
           if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
             VERSION="${GITHUB_REF#refs/tags/}"
-            TAGS="latest ${VERSION}"
+            CLEAN_VERSION="${VERSION#v}"
+            {
+              echo "tags<<EOF"
+              echo "latest"
+              echo "${VERSION}"
+              echo "${CLEAN_VERSION}"
+              echo "EOF"
+            } >> $GITHUB_OUTPUT
+          else
+            {
+              echo "tags<<EOF"
+              echo "latest"
+              echo "EOF"
+            } >> $GITHUB_OUTPUT
           fi
-          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
 
       - name: Build image using buildah
         id: build-image
