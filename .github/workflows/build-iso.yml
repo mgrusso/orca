@@ -87,14 +87,8 @@ jobs:
           mv -v "$ISO_SRC" "./$TARGET_ISO"
           sha256sum "./$TARGET_ISO" > "./${TARGET_ISO}-CHECKSUM"
 
-          echo "🗜️ Compressing ISO with xz (multi-threaded)..."
-          xz -T0 -3 -v -k "./$TARGET_ISO"
-          sha256sum "./${TARGET_ISO}.xz" > "./${TARGET_ISO}.xz-CHECKSUM"
-
           echo "iso_path=./$TARGET_ISO" >> $GITHUB_OUTPUT
-          echo "iso_xz_path=./${TARGET_ISO}.xz" >> $GITHUB_OUTPUT
           echo "checksum_path=./${TARGET_ISO}-CHECKSUM" >> $GITHUB_OUTPUT
-          echo "checksum_xz_path=./${TARGET_ISO}.xz-CHECKSUM" >> $GITHUB_OUTPUT
           echo "iso_filename=$TARGET_ISO" >> $GITHUB_OUTPUT
 
       - name: Upload ISO Artifact
@@ -103,9 +97,7 @@ jobs:
           name: orca-${{ inputs.image_tag }}-installer
           path: |
             ${{ steps.prepare-iso.outputs.iso_path }}
-            ${{ steps.prepare-iso.outputs.iso_xz_path }}
             ${{ steps.prepare-iso.outputs.checksum_path }}
-            ${{ steps.prepare-iso.outputs.checksum_xz_path }}
           if-no-files-found: error
           retention-days: 14
 
@@ -114,18 +106,18 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TARGET_XZ="${{ steps.prepare-iso.outputs.iso_xz_path }}"
-          CHECKSUM_XZ="${{ steps.prepare-iso.outputs.checksum_xz_path }}"
           TARGET_ISO="${{ steps.prepare-iso.outputs.iso_path }}"
           CHECKSUM_ISO="${{ steps.prepare-iso.outputs.checksum_path }}"
 
-          # Upload xz-compressed ISO and checksum directly to release
-          gh release upload "${{ inputs.image_tag }}" "$TARGET_XZ" "$CHECKSUM_XZ" "$CHECKSUM_ISO" --clobber || true
+          # Always upload the sha256 checksum to the release
+          gh release upload "${{ inputs.image_tag }}" "$CHECKSUM_ISO" --clobber || true
 
-          # If the uncompressed ISO happens to be under 2 GiB, upload it too
+          # If the ISO happens to be under 2 GiB, upload it directly to the release
           ISO_SIZE=$(stat -c%s "$TARGET_ISO" 2>/dev/null || stat -f%z "$TARGET_ISO")
           if [ "$ISO_SIZE" -lt 2147483648 ]; then
             gh release upload "${{ inputs.image_tag }}" "$TARGET_ISO" --clobber || true
+          else
+            echo "ℹ️ ISO size ($ISO_SIZE bytes) exceeds GitHub Releases 2 GiB limit; available via GitHub Actions artifacts."
           fi
 
 

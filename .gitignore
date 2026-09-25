@@ -4,6 +4,8 @@ _build/
 *.qcow2
 *.tar.gz
 *.raw
+*.xz
+*.CHECKSUM
 
 # Local container cache
 .podman/
