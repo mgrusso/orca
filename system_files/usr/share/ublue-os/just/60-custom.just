@@ -16,6 +16,12 @@ orca-welcome:
     #!/usr/bin/env bash
     orca-welcome &
 
+# Lock the current desktop session via Noctalia (Super + Shift + L)
+orca-lock:
+    #!/usr/bin/env bash
+    orca-lock
+
+
 
 # Set wallpaper and synchronize Niri focus ring accent color
 orca-wallpaper-sync target="random":

@@ -189,6 +189,12 @@ binds {
     XF86AudioNext        allow-when-locked=true { spawn "playerctl" "next"; }
     XF86AudioPrev        allow-when-locked=true { spawn "playerctl" "previous"; }
 
+    // Session locking
+    Mod+Shift+L { spawn "orca-lock"; }
+    Mod+Escape  { spawn "orca-lock"; }
+    Ctrl+Alt+L  { spawn "orca-lock"; }
+
     // System exit
     Mod+Shift+E { quit; }
 }
+

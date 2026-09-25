@@ -1,0 +1,13 @@
+#!/bin/bash
+set -euo pipefail
+
+# Orca OS - Session Screen Lock Dispatcher
+
+if command -v noctalia >/dev/null 2>&1; then
+    exec noctalia msg session lock
+elif command -v loginctl >/dev/null 2>&1; then
+    exec loginctl lock-session
+else
+    echo "No supported screen locker found."
+    exit 1
+fi

@@ -388,8 +388,10 @@ class OrcaWelcomeWindow(Adw.ApplicationWindow):
             ("Super + Shift + W", "Shuffle wallpaper and harmonize accent colors"),
             ("Print / Super + Shift + S", "Take screenshot with Satty annotation editor"),
             ("Super + Shift + R", "Toggle screen recording (wf-recorder)"),
+            ("Super + Shift + L", "Lock desktop session via Noctalia (or Ctrl+Alt+L)"),
             ("Super + 1 ... 9", "Switch to workspace 1 through 9"),
             ("Super + ?", "Show keyboard shortcuts cheatsheet overlay"),
+
         ]
 
         for key, desc in shortcuts:

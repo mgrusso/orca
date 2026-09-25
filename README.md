@@ -112,6 +112,7 @@ ujust orca-update
 | :--- | :--- |
 | `Super + Space` or `Super + D` | **Noctalia Application Launcher** |
 | `Super + Return` or `Super + T` | **Ghostty Terminal** |
+| `Super + B` | **Launch Default Web Browser** (configured via `orca-welcome`) |
 | `Super + C` / `Super + N` | **Noctalia Control Center & Notifications** |
 | `Super + Shift + W` | **Shuffle Wallpaper & Harmonize Niri Accent Ring** |
 | `Super + Left / Right` | **Scroll across tiling columns** (or trackpad gesture) |
@@ -123,7 +124,9 @@ ujust orca-update
 | `Super + R` | **Cycle column width presets (33% / 50% / 66%)** |
 | `Print` or `Super + Shift + S` | **Take screenshot with Satty annotation editor** |
 | `Super + Shift + R` | **Toggle screen recording (wf-recorder)** |
+| `Super + Shift + L` or `Ctrl + Alt + L` | **Lock desktop session (Noctalia)** |
 | `Super + ?` | **Interactive keyboard shortcuts cheatsheet overlay** |
+
 
 ---
 
