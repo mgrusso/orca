@@ -39,7 +39,36 @@ echo "Active release channel: $CHANNEL ($TARGET_IMAGE)"
 # 1. Base OS Image Update
 echo ""
 echo "📦 [1/4] Updating base operating system image..."
-if command -v bootc >/dev/null 2>&1; then
+if command -v rpm-ostree >/dev/null 2>&1; then
+    # Extract current image reference cleanly without ANSI escapes
+    CURRENT_IMG=$(rpm-ostree status --booted 2>/dev/null | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' | grep -oE "ghcr.io/[^ ]+" | head -n 1 || true)
+    
+    IS_SAME_CHANNEL=false
+    if [ -n "$CURRENT_IMG" ]; then
+        if [[ "$CURRENT_IMG" == *":$TARGET_TAG"* ]] || [[ "$CURRENT_IMG" == *":$CHANNEL"* ]] || [[ "$CURRENT_IMG" == *":v$CHANNEL"* ]]; then
+            IS_SAME_CHANNEL=true
+        fi
+    fi
+
+    if [ "$IS_SAME_CHANNEL" = true ]; then
+        echo "Currently tracking channel '$TARGET_TAG'. Checking for updates..."
+        rpm-ostree upgrade || true
+    else
+        echo "Switching base image to channel '$TARGET_TAG' ($TARGET_IMAGE)..."
+        REBASE_SPEC="ostree-unverified-registry:$TARGET_IMAGE"
+        if rpm-ostree status 2>/dev/null | grep -q "ostree-image-signed"; then
+            REBASE_SPEC="ostree-image-signed:docker://$TARGET_IMAGE"
+        fi
+
+        REBASE_OUTPUT=$(sudo rpm-ostree rebase "$REBASE_SPEC" 2>&1 || true)
+        echo "$REBASE_OUTPUT"
+
+        if echo "$REBASE_OUTPUT" | grep -qi "unchanged"; then
+            echo "Already on this image specification. Checking for updates..."
+            rpm-ostree upgrade || true
+        fi
+    fi
+elif command -v bootc >/dev/null 2>&1; then
     CURRENT_IMG=$(bootc status 2>/dev/null | grep -E "image:|Image:" | head -n 1 | awk '{print $NF}' || true)
     if [[ "$CURRENT_IMG" == *":$TARGET_TAG" ]]; then
         sudo bootc upgrade || true
@@ -47,20 +76,8 @@ if command -v bootc >/dev/null 2>&1; then
         echo "Switching base image to channel '$TARGET_TAG'..."
         sudo bootc switch "$TARGET_IMAGE" || true
     fi
-elif command -v rpm-ostree >/dev/null 2>&1; then
-    CURRENT_IMG=$(rpm-ostree status 2>/dev/null | grep -E "● ostree" | head -n 1 | awk '{print $NF}' || true)
-    if [[ "$CURRENT_IMG" == *":$TARGET_TAG" ]]; then
-        rpm-ostree upgrade || true
-    else
-        echo "Switching base image to channel '$TARGET_TAG'..."
-        if rpm-ostree status 2>/dev/null | grep -q "ostree-image-signed"; then
-            sudo rpm-ostree rebase "ostree-image-signed:docker://$TARGET_IMAGE" || true
-        else
-            sudo rpm-ostree rebase "ostree-unverified-registry:$TARGET_IMAGE" || true
-        fi
-    fi
 else
-    echo "Neither bootc nor rpm-ostree detected (skipped)."
+    echo "Neither rpm-ostree nor bootc detected (skipped)."
 fi
 
 # 2. Flatpaks Update
