@@ -22,8 +22,9 @@ A customized, immutable (atomic/bootc) operating system image based on **Project
 | Shortcut | Action |
 |---|---|
 | `Super + Return` or `Super + T` | Open Ghostty terminal |
-| `Super + D` | Toggle Noctalia app launcher |
+| `Super + Space` or `Super + D` | Toggle Noctalia app launcher (GNOME/Dakota feel) |
 | `Super + C` | Toggle Noctalia control center (Wi-Fi, brightness, power profiles) |
+| `Super + N` | Toggle Notifications panel |
 | `Super + E` | Open Nautilus file manager |
 | `Super + Q` | Close focused window |
 | `Super + F` | Maximize window / column |

@@ -49,12 +49,14 @@ window-rule {
 
 // Keybindings
 binds {
-    // Standard application launches
+    // Standard application launches & Dakota/GNOME parity
     Mod+Return { spawn "ghostty"; }
     Mod+T      { spawn "ghostty"; }
-    Mod+D { spawn "noctalia" "msg" "launcher-toggle"; }
-    Mod+E { spawn "nautilus"; }
-    Mod+C { spawn "noctalia" "msg" "control-center-toggle"; }
+    Mod+Space  { spawn "noctalia" "msg" "launcher-toggle"; }
+    Mod+D      { spawn "noctalia" "msg" "launcher-toggle"; }
+    Mod+E      { spawn "nautilus"; }
+    Mod+C      { spawn "noctalia" "msg" "control-center-toggle"; }
+    Mod+N      { spawn "noctalia" "msg" "notifications-toggle"; }
 
     // Window management
     Mod+Q { close-window; }
