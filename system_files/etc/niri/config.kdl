@@ -4,6 +4,7 @@
 // Start required background services & Noctalia Shell
 spawn-at-startup "/usr/libexec/polkit-mate-authentication-agent-1"
 spawn-at-startup "noctalia"
+spawn-at-startup "bash" "-c" "if [ ! -f ~/.config/ghostty/config ]; then mkdir -p ~/.config/ghostty && cp /etc/skel/.config/ghostty/config ~/.config/ghostty/config; fi"
 spawn-at-startup "bash" "-c" "swaybg -i $(find /usr/share/backgrounds/ -type f \\( -name '*.png' -o -name '*.jpg' -o -name '*.webp' \\) | grep -i bluefin | head -n 1 || echo /usr/share/backgrounds/default.png) -m fill"
 
 input {
