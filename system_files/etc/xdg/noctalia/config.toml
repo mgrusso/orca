@@ -1,0 +1,47 @@
+# Orca Default Noctalia Shell Configuration
+# Matches Ghostty & Niri (Deep Ocean / Catppuccin Mocha aesthetic)
+
+[general]
+theme = "dark"
+font = "Inter 11"
+icon_theme = "Papirus-Dark"
+
+[bar]
+position = "top"
+height = 36
+margin = [8, 12, 0, 12]
+spacing = 8
+background = "#181825ee"
+blur = true
+border_radius = 12
+
+[bar.left]
+modules = ["launcher", "workspaces", "window_title"]
+
+[bar.center]
+modules = ["clock"]
+
+[bar.right]
+modules = ["media", "power_profile", "network", "battery", "control_center_toggle"]
+
+[launcher]
+icon = "distributor-logo-fedora"
+command = "noctalia msg launcher-toggle"
+
+[power_profile]
+# Native power-profiles-daemon integration
+enabled = true
+
+[battery]
+show_percentage = true
+warning_level = 20
+critical_level = 10
+
+[clock]
+format = "%a %d. %b  %H:%M"
+
+[control_center]
+enabled = true
+blur = true
+border_radius = 16
+modules = ["quick_settings", "brightness", "volume", "power_profiles", "notifications"]

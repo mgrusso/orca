@@ -1,0 +1,105 @@
+// Orca Default Niri Configuration
+// Modern scroll-tiling with Noctalia Shell & Ghostty integration
+
+// Start required background services & Noctalia Shell
+spawn-at-startup "/usr/libexec/polkit-mate-authentication-agent-1"
+spawn-at-startup "noctalia"
+spawn-at-startup "bash" "-c" "swaybg -i $(find /usr/share/backgrounds/ -type f \\( -name '*.png' -o -name '*.jpg' -o -name '*.webp' \\) | grep -i bluefin | head -n 1 || echo /usr/share/backgrounds/default.png) -m fill"
+
+input {
+    keyboard {
+        xkb {
+            layout "de"
+        }
+    }
+    touchpad {
+        tap
+        natural-scroll
+        accel-speed 0.2
+    }
+}
+
+layout {
+    gaps 10
+    center-focused-column "never"
+
+    preset-column-widths {
+        proportion 0.33333
+        proportion 0.5
+        proportion 0.66667
+    }
+
+    default-column-width { proportion 0.5; }
+
+    focus-ring {
+        width 2
+        active-color "#cba6f7"
+        inactive-color "#313244"
+    }
+
+    border {
+        off
+    }
+}
+
+// Window rules
+window-rule {
+    geometry-corner-radius 10
+    clip-to-geometry true
+}
+
+// Keybindings
+binds {
+    // Standard application launches & Dakota/GNOME parity
+    Mod+Return { spawn "ghostty"; }
+    Mod+T      { spawn "ghostty"; }
+    Mod+Space  { spawn "noctalia" "msg" "launcher-toggle"; }
+    Mod+D      { spawn "noctalia" "msg" "launcher-toggle"; }
+    Mod+E      { spawn "nautilus"; }
+    Mod+C      { spawn "noctalia" "msg" "control-center-toggle"; }
+    Mod+N      { spawn "noctalia" "msg" "notifications-toggle"; }
+
+    // Window management
+    Mod+Q { close-window; }
+    Mod+F { maximize-column; }
+    Mod+Shift+F { fullscreen-window; }
+
+    // Focus navigation
+    Mod+Left  { focus-column-left; }
+    Mod+Down  { focus-window-down; }
+    Mod+Up    { focus-window-up; }
+    Mod+Right { focus-column-right; }
+    Mod+H     { focus-column-left; }
+    Mod+J     { focus-window-down; }
+    Mod+K     { focus-window-up; }
+    Mod+L     { focus-column-right; }
+
+    // Column resizing
+    Mod+R { switch-preset-column-width; }
+
+    // Workspaces
+    Mod+1 { focus-workspace 1; }
+    Mod+2 { focus-workspace 2; }
+    Mod+3 { focus-workspace 3; }
+    Mod+4 { focus-workspace 4; }
+    Mod+5 { focus-workspace 5; }
+
+    Mod+Shift+1 { move-column-to-workspace 1; }
+    Mod+Shift+2 { move-column-to-workspace 2; }
+    Mod+Shift+3 { move-column-to-workspace 3; }
+    Mod+Shift+4 { move-column-to-workspace 4; }
+    Mod+Shift+5 { move-column-to-workspace 5; }
+
+    // Media & Hardware keys
+    XF86AudioRaiseVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%+"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%-"; }
+    XF86AudioMute        allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle"; }
+    XF86MonBrightnessUp   allow-when-locked=true { spawn "brightnessctl" "set" "+5%"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn "brightnessctl" "set" "5%-"; }
+    XF86AudioPlay        allow-when-locked=true { spawn "playerctl" "play-pause"; }
+    XF86AudioNext        allow-when-locked=true { spawn "playerctl" "next"; }
+    XF86AudioPrev        allow-when-locked=true { spawn "playerctl" "previous"; }
+
+    // System exit
+    Mod+Shift+E { quit; }
+}
