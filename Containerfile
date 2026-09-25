@@ -15,6 +15,7 @@ RUN (rpm-ostree install \
         niri \
         hyprland \
         ghostty \
+        firefox \
         noctalia \
         swaybg \
         brightnessctl \
@@ -30,6 +31,7 @@ RUN (rpm-ostree install \
         niri \
         hyprland \
         ghostty \
+        firefox \
         noctalia \
         swaybg \
         brightnessctl \
@@ -41,6 +43,7 @@ RUN (rpm-ostree install \
         rsms-inter-fonts \
         jetbrains-mono-fonts && \
      dnf5 clean all)
+
 
 # Copy desktop integration, system configurations, and user skel dotfiles
 COPY system_files/ /

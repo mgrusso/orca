@@ -5,7 +5,8 @@
 spawn-at-startup "/usr/libexec/polkit-mate-authentication-agent-1"
 spawn-at-startup "noctalia"
 spawn-at-startup "bash" "-c" "if [ ! -f ~/.config/ghostty/config ]; then mkdir -p ~/.config/ghostty && cp /etc/skel/.config/ghostty/config ~/.config/ghostty/config; fi"
-spawn-at-startup "bash" "-c" "sleep 1 && noctalia msg wallpaper-set $(find /usr/share/backgrounds/bluefin/ -type f \\( -name '*.jxl' -o -name '*.png' -o -name '*.jpg' -o -name '*.webp' \\) | grep -i night | head -n 1 || find /usr/share/backgrounds/bluefin/ -type f | head -n 1)"
+spawn-at-startup "bash" "-c" "sleep 1 && noctalia msg wallpaper set $(find /usr/share/backgrounds/bluefin/ -type f \\( -name '*.jxl' -o -name '*.png' -o -name '*.jpg' -o -name '*.webp' \\) | grep -i night | head -n 1 || find /usr/share/backgrounds/bluefin/ -type f | head -n 1)"
+
 
 
 input {
@@ -55,12 +56,15 @@ binds {
     // Standard application launches & Dakota/GNOME parity
     Mod+Return { spawn "ghostty"; }
     Mod+T      { spawn "ghostty"; }
-    Mod+Space  { spawn "noctalia" "msg" "launcher-toggle"; }
-    Mod+D      { spawn "noctalia" "msg" "launcher-toggle"; }
+    Mod+Space  { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
+    Mod+D      { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
+    Mod+B      { spawn "firefox"; }
     Mod+E      { spawn "nautilus"; }
-    Mod+C      { spawn "noctalia" "msg" "control-center-toggle"; }
-    Mod+N      { spawn "noctalia" "msg" "notifications-toggle"; }
-    Mod+W      { spawn "noctalia" "msg" "wallpaper" "random" "all"; }
+    Mod+C      { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
+    Mod+N      { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
+    Mod+W      { spawn "noctalia" "msg" "panel-toggle" "wallpaper"; }
+    Mod+Shift+W { spawn "noctalia" "msg" "wallpaper" "random" "all"; }
+
 
     // Window management
     Mod+Q { close-window; }

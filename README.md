@@ -30,7 +30,9 @@ A customized, immutable (atomic/bootc) operating system image based on **Project
 | `Super + C` | Toggle Noctalia control center (Wi-Fi, brightness, power profiles) |
 | `Super + N` | Toggle Notifications panel |
 | `Super + W` | Cycle Bluefin wallpaper randomly on the fly |
+| `Super + B` | Open Firefox web browser |
 | `Super + E` | Open Nautilus file manager |
+
 | `Super + Q` | Close focused window |
 | `Super + F` | Maximize window / column |
 | `Super + Shift + F` | Fullscreen window |
