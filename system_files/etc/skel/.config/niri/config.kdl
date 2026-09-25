@@ -1,6 +1,14 @@
 // Orca Default Niri Configuration
 // Modern scroll-tiling with Noctalia Shell & Ghostty integration
 
+// Draw focus ring and borders as outlines around windows rather than solid background rectangles
+prefer-no-csd
+
+// Skip the "Important Hotkeys" overlay at startup (accessible on-demand via Super+?)
+hotkey-overlay {
+    skip-at-startup
+}
+
 // Start required background services & Noctalia Shell
 spawn-at-startup "/usr/libexec/polkit-mate-authentication-agent-1"
 spawn-at-startup "noctalia"
@@ -73,6 +81,7 @@ layout {
 window-rule {
     geometry-corner-radius 10
     clip-to-geometry true
+    draw-border-with-background false
 }
 
 window-rule {
@@ -85,6 +94,7 @@ window-rule {
 window-rule {
     match app-id=r#"^com\.mitchellh\.ghostty$"#
     opacity 0.82
+    draw-border-with-background false
     background-effect {
         blur true
         xray false
@@ -94,6 +104,7 @@ window-rule {
 window-rule {
     match app-id=r#"ghostty"#
     opacity 0.82
+    draw-border-with-background false
     background-effect {
         blur true
         xray false
@@ -102,6 +113,9 @@ window-rule {
 
 // Keybindings
 binds {
+    // Show important hotkeys overlay on-demand
+    Mod+Shift+Slash { show-hotkey-overlay; }
+
     // Standard application launches & Dakota/GNOME parity
     Mod+Return { spawn "ghostty"; }
     Mod+T      { spawn "ghostty"; }
