@@ -106,4 +106,26 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload "${{ inputs.image_tag }}" "${{ steps.prepare-iso.outputs.iso_path }}" "${{ steps.prepare-iso.outputs.checksum_path }}" --clobber || true
+          TARGET_ISO="${{ steps.prepare-iso.outputs.iso_filename }}"
+          CHECKSUM="${{ steps.prepare-iso.outputs.checksum_path }}"
+
+          # Always upload the checksum file
+          gh release upload "${{ inputs.image_tag }}" "$CHECKSUM" --clobber || true
+
+          # GitHub Releases enforces a strict 2 GiB (2,147,483,648 bytes) per-file limit.
+          ISO_SIZE=$(stat -c%s "$TARGET_ISO" 2>/dev/null || stat -f%z "$TARGET_ISO")
+          if [ "$ISO_SIZE" -ge 2147483648 ]; then
+            echo "⚠️ ISO size ($ISO_SIZE bytes) exceeds GitHub Release 2 GiB limit. Splitting into 1900MB parts..."
+            split -b 1900M -d -a 2 "$TARGET_ISO" "${TARGET_ISO}.part"
+
+            # Create cross-platform reassembly helpers
+            printf '#!/bin/bash\ncat orca-*.iso.part* > orca-installer.iso\necho "Successfully reassembled orca-installer.iso!"\n' > reassemble.sh
+            chmod +x reassemble.sh
+
+            printf '@echo off\r\ncopy /b orca-*.iso.part* orca-installer.iso\r\necho Successfully reassembled orca-installer.iso!\r\n' > reassemble.bat
+
+            gh release upload "${{ inputs.image_tag }}" ${TARGET_ISO}.part* reassemble.sh reassemble.bat --clobber || true
+          else
+            gh release upload "${{ inputs.image_tag }}" "$TARGET_ISO" --clobber || true
+          fi
+
