@@ -3,6 +3,7 @@ _build/
 *.iso
 *.qcow2
 *.tar.gz
+*.raw
 
 # Local container cache
 .podman/
