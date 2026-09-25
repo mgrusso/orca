@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Welcome to Orca
+Comment=Onboarding and Welcome Tour for Orca OS
+Exec=orca-welcome
+Icon=preferences-desktop-theme
+Terminal=false
+Type=Application
+Categories=Utility;Settings;GTK;
+StartupNotify=true
+StartupWMClass=org.orca.welcome

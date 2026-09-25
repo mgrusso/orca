@@ -11,6 +11,12 @@ orca-theme theme="":
     #!/usr/bin/env bash
     orca-theme "{{theme}}"
 
+# Launch the Orca OS interactive welcome tour and onboarding wizard
+orca-welcome:
+    #!/usr/bin/env bash
+    orca-welcome &
+
+
 # Set wallpaper and synchronize Niri focus ring accent color
 orca-wallpaper-sync target="random":
     #!/usr/bin/env bash

@@ -14,6 +14,8 @@ spawn-at-startup "/usr/libexec/polkit-mate-authentication-agent-1"
 spawn-at-startup "noctalia"
 spawn-at-startup "bash" "-c" "if [ ! -f ~/.config/ghostty/config ]; then mkdir -p ~/.config/ghostty && cp /etc/skel/.config/ghostty/config ~/.config/ghostty/config; fi"
 spawn-at-startup "bash" "-c" "sleep 1 && (noctalia msg wallpaper-set $(find /usr/share/backgrounds/bluefin/ -type f \\( -name '*.jxl' -o -name '*.png' -o -name '*.jpg' -o -name '*.webp' \\) | grep -i night | head -n 1 || find /usr/share/backgrounds/bluefin/ -type f | head -n 1) || true)"
+spawn-at-startup "bash" "-c" "if [ ! -f ~/.config/orca/no-show-welcome ]; then sleep 1 && orca-welcome; fi"
+
 
 // Layer rules for Noctalia wallpaper & backdrop
 layer-rule {
@@ -90,6 +92,14 @@ window-rule {
     default-column-width { fixed 1080; }
     default-window-height { fixed 920; }
 }
+
+window-rule {
+    match app-id="org.orca.welcome"
+    open-floating true
+    default-column-width { fixed 860; }
+    default-window-height { fixed 640; }
+}
+
 
 window-rule {
     match app-id=r#"^com\.mitchellh\.ghostty$"#
