@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Orca (Niri)
+Comment=Modern Scroll-Tiling Wayland Session with Noctalia Shell
+Exec=niri-session
+Type=Application
+DesktopNames=niri;GNOME

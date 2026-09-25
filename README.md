@@ -1,6 +1,6 @@
 # Orca 🐋
 
-A customized, immutable (atomic/bootc) operating system image based on **Project Bluefin**, preconfigured with modern tiling window managers (**Niri** & **Hyprland**), **Noctalia Shell**, the **Ghostty** terminal, and a unified dark theme.
+A customized, immutable (atomic/bootc) operating system image based on **Project Bluefin Dakota**, preconfigured with modern tiling window managers (**Niri** & **Hyprland**), **Noctalia Shell**, the **Ghostty** terminal, and a unified dark theme.
 
 ---
 
