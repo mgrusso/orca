@@ -72,3 +72,8 @@ RUN glib-compile-schemas /usr/share/glib-2.0/schemas/
 RUN sed -i -e 's/^NAME=.*/NAME="Orca"/' \
            -e 's/^PRETTY_NAME=.*/PRETTY_NAME="Orca (Bluefin)"/' \
            /usr/lib/os-release
+
+# Clean upstream Bluefin MOTD banners and neutralize umotd binary
+RUN rm -rf /etc/motd.d/* /etc/issue.d/* 2>/dev/null || true && \
+    if [ -f /usr/bin/umotd ]; then printf '#!/bin/sh\nexit 0\n' > /usr/bin/umotd && chmod +x /usr/bin/umotd; fi
+

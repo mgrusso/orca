@@ -1,0 +1,9 @@
+🐋 Willkommen bei Orca OS!
+──────────────────────────────────────────────────────────
+• ujust orca-update     - System, Flatpaks, Brew & Container aktualisieren
+• ujust orca-clean      - Desktop-Einstellungen (Niri/Noctalia/Ghostty) zurücksetzen
+• ujust orca-dev-box    - Schnelle Distrobox-Entwicklungsumgebung starten
+• Super + Space         - Noctalia App Launcher
+• Super + ?             - Tastaturkürzel-Übersicht anzeigen
+• orca-info / fastfetch - Systemstatus & Hardware-Details
+──────────────────────────────────────────────────────────
