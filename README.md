@@ -34,41 +34,10 @@ A customized, immutable (atomic/bootc) operating system image based on **Project
 
 ---
 
-## Installation Methods
-
-### Method 1: System Extension (`systemd-sysext`) — Recommended for Dakota
-
-Dakota enforces kernel `fs-verity` on all ComposeFS layers, which prevents custom OCI image rebase via `bootc switch`. The intended, non-destructive extension method is `systemd-sysext`:
-
-```bash
-# 1. Download the sysext raw image into extensions directory
-sudo mkdir -p /var/lib/extensions
-sudo curl -L -o /var/lib/extensions/orca.raw https://github.com/mgrusso/orca/releases/download/v0.1.0/orca.raw
-
-# 2. Enable automatic extension mounting on boot
-sudo systemctl enable systemd-sysext
-
-# 3. Activate extension immediately (no reboot required!)
-sudo systemd-sysext refresh
-```
-
-To configure your user dotfiles:
-```bash
-mkdir -p ~/.config/{niri,noctalia,ghostty,hypr}
-curl -sSL https://raw.githubusercontent.com/mgrusso/orca/main/system_files/etc/skel/.config/niri/config.kdl -o ~/.config/niri/config.kdl
-curl -sSL https://raw.githubusercontent.com/mgrusso/orca/main/system_files/etc/skel/.config/noctalia/config.toml -o ~/.config/noctalia/config.toml
-curl -sSL https://raw.githubusercontent.com/mgrusso/orca/main/system_files/etc/skel/.config/ghostty/config -o ~/.config/ghostty/config
-curl -sSL https://raw.githubusercontent.com/mgrusso/orca/main/system_files/etc/skel/.config/hypr/hyprland.conf -o ~/.config/hypr/hyprland.conf
-```
-
-Log out of your current session, click the gear icon on the GDM login screen, and select **Orca (Niri)**.
-
----
-
-### Method 2: Bootc Rebase (Standard Bluefin / Fedora Silverblue)
-
-On a standard Bluefin or Fedora Silverblue (Atomic) system:
-
+## Installation & Switch
+ 
+Run the following commands on your laptop (bootc-enabled system like Bluefin or Fedora Silverblue):
+ 
 ```bash
 # 1. Check current deployment status
 sudo bootc status

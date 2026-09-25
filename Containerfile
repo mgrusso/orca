@@ -35,12 +35,13 @@ RUN mkdir -p /export/bin /export/libexec /export/lib64 /export/share /export/way
     cp -r /usr/share/themes/adw-gtk3* /export/share/ 2>/dev/null || true
 
 
-# Stage 2: Final Image (Dakota Native)
-FROM ghcr.io/projectbluefin/dakota:stable
+# Stage 2: Final Image (Standard Bluefin Base)
+FROM ghcr.io/ublue-os/bluefin:stable
 
 LABEL org.opencontainers.image.title="Orca" \
-      org.opencontainers.image.description="Bluefin Dakota customized with Niri, Noctalia Shell and Ghostty" \
+      org.opencontainers.image.description="Bluefin customized with Niri, Noctalia Shell and Ghostty" \
       org.opencontainers.image.vendor="mgrusso"
+
 
 # Copy collected standalone binaries, libs, and assets from builder
 COPY --from=builder /export/bin/ /usr/local/bin/
