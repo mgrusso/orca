@@ -108,6 +108,11 @@ else
     echo "Distrobox not found (skipped)."
 fi
 
+# 5. Migrate user configurations to latest standards
+if [ -f "$HOME/.config/niri/config.kdl" ]; then
+    sed -i -E 's/spawn "firefox"/spawn "orca-browser"/g' "$HOME/.config/niri/config.kdl" 2>/dev/null || true
+fi
+
 echo ""
 echo "=================================================="
 echo "✨ Orca OS is now up to date!"

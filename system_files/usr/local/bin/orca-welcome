@@ -51,6 +51,21 @@ def set_default_browser(browser_id, desktop_file=None):
         except Exception:
             pass
 
+    # Ensure user's ~/.config/niri/config.kdl uses the dynamic orca-browser dispatcher
+    niri_conf = os.path.expanduser("~/.config/niri/config.kdl")
+    if os.path.exists(niri_conf):
+        try:
+            with open(niri_conf, "r") as f:
+                content = f.read()
+            if 'spawn "firefox"' in content:
+                content = content.replace('spawn "firefox"', 'spawn "orca-browser"')
+                with open(niri_conf, "w") as f:
+                    f.write(content)
+                subprocess.Popen(["niri", "msg", "action", "reload-config"])
+        except Exception:
+            pass
+
+
 
 def launch_or_install_browser(app_id, name):
     if is_flatpak_installed(app_id):
