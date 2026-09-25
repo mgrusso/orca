@@ -11,8 +11,7 @@
   "packageRules": [
     {
       "matchPackagePatterns": [
-        "^ghcr.io/projectbluefin/dakota",
-        "^fedora"
+        "^ghcr.io/ublue-os/bluefin"
       ],
       "groupName": "base-images",
       "automerge": true
