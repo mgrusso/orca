@@ -57,6 +57,12 @@ if [ -f "/etc/skel/.config/hypr/hyprland.conf" ]; then
     cp -f "/etc/skel/.config/hypr/hyprland.conf" "$HOME/.config/hypr/hyprland.conf"
 fi
 
+# 5b. Seed Fastfetch configuration
+mkdir -p "$HOME/.config/fastfetch"
+if [ -f "/etc/skel/.config/fastfetch/config.jsonc" ]; then
+    cp -f "/etc/skel/.config/fastfetch/config.jsonc" "$HOME/.config/fastfetch/config.jsonc"
+fi
+
 # 6. Ensure ublue-user-setup is masked in the user session to prevent false lockscreen warnings
 systemctl --user mask ublue-user-setup.service 2>/dev/null || true
 

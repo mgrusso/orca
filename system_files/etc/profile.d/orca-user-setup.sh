@@ -41,3 +41,9 @@ if [ -n "$HOME" ] && [ ! -f "$GHOSTTY_CONF" ]; then
         cp "/etc/skel/.config/ghostty/config" "$GHOSTTY_CONF" 2>/dev/null || true
     fi
 fi
+
+# 5. Interactive Terminal Welcome Banner (Fastfetch)
+if [ -t 1 ] && [ "${SHLVL:-1}" -le 2 ] && [ -z "${ORCA_FETCH_SHOWN:-}" ] && command -v fastfetch >/dev/null 2>&1; then
+    export ORCA_FETCH_SHOWN=1
+    fastfetch
+fi

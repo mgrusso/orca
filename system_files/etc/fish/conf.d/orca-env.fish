@@ -27,3 +27,11 @@ if test -d /var/lib/flatpak/exports/bin
         set -gx PATH $PATH /var/lib/flatpak/exports/bin
     end
 end
+
+# 4. Interactive Terminal Welcome Banner (Fastfetch)
+if status is-interactive
+    if not set -q ORCA_FETCH_SHOWN; and command -v fastfetch >/dev/null 2>&1
+        set -gx ORCA_FETCH_SHOWN 1
+        fastfetch
+    end
+end

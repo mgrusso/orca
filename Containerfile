@@ -63,7 +63,7 @@ RUN curl -sL https://github.com/Satty-org/Satty/releases/download/v0.22.0/satty-
 COPY system_files/ /
 
 # Ensure execution permissions for system helper scripts
-RUN chmod +x /usr/libexec/orca-firstrun /usr/local/bin/firefox /usr/local/bin/orca-screenshot /usr/local/bin/orca-screenrecord
+RUN chmod +x /usr/libexec/orca-firstrun /usr/local/bin/*
 
 # Compile gsettings schema overrides for system-wide dark mode & theming
 RUN glib-compile-schemas /usr/share/glib-2.0/schemas/

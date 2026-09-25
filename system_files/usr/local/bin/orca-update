@@ -1,0 +1,54 @@
+#!/bin/bash
+set -euo pipefail
+
+# Orca OS - Synchronous Full System Updater
+
+echo "🐋 Orca OS — Gesamtes System wird aktualisiert..."
+echo "=================================================="
+
+# 1. Base OS Image Update
+echo ""
+echo "📦 [1/4] Betriebssystem-Image aktualisieren..."
+if command -v bootc >/dev/null 2>&1; then
+    sudo bootc upgrade || true
+elif command -v rpm-ostree >/dev/null 2>&1; then
+    rpm-ostree upgrade || true
+else
+    echo "Weder bootc noch rpm-ostree gefunden (übersprungen)."
+fi
+
+# 2. Flatpaks Update
+echo ""
+echo "📦 [2/4] Flatpak-Anwendungen aktualisieren..."
+if command -v flatpak >/dev/null 2>&1; then
+    flatpak update -y || true
+else
+    echo "Flatpak nicht installiert (übersprungen)."
+fi
+
+# 3. Homebrew Update
+echo ""
+echo "📦 [3/4] Homebrew Pakete aktualisieren..."
+if [ -x "/home/linuxbrew/.linuxbrew/bin/brew" ]; then
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv 2>/dev/null)"
+    brew update && brew upgrade || true
+else
+    echo "Homebrew nicht vorhanden (übersprungen)."
+fi
+
+# 4. Distrobox Containers Update
+echo ""
+echo "📦 [4/4] Distrobox-Container aktualisieren..."
+if command -v distrobox >/dev/null 2>&1; then
+    distrobox upgrade -a || true
+else
+    echo "Distrobox nicht vorhanden (übersprungen)."
+fi
+
+echo ""
+echo "=================================================="
+echo "✨ Orca OS ist jetzt auf dem neuesten Stand!"
+if [ -f /run/reboot-required ] || (command -v rpm-ostree >/dev/null 2>&1 && rpm-ostree status | grep -q "Staged: yes"); then
+    echo "🔄 Ein Neustart ist erforderlich, um die neuen Systemaktualisierungen anzuwenden."
+    echo "   Führe 'sudo systemctl reboot' aus, wenn du bereit bist."
+fi

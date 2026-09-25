@@ -1,0 +1,20 @@
+#!/bin/bash
+set -euo pipefail
+
+# Orca OS - Instant Distrobox Development Environment Launcher
+BOX_NAME="${1:-orca-dev}"
+BOX_IMAGE="${2:-ghcr.io/ublue-os/fedora-toolbox:latest}"
+
+if ! command -v distrobox >/dev/null 2>&1; then
+    echo "❌ Fehler: Distrobox ist auf diesem System nicht installiert."
+    exit 1
+fi
+
+if ! distrobox list | grep -w -q "$BOX_NAME"; then
+    echo "🐋 Erstelle neuen Entwicklungs-Container '$BOX_NAME' (Image: $BOX_IMAGE)..."
+    distrobox create --name "$BOX_NAME" --image "$BOX_IMAGE" -Y
+    echo "✨ Container '$BOX_NAME' erfolgreich erstellt."
+fi
+
+echo "🚀 Betrete Entwicklungs-Container '$BOX_NAME'..."
+distrobox enter "$BOX_NAME"

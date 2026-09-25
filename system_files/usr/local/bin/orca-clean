@@ -1,0 +1,30 @@
+#!/bin/bash
+set -euo pipefail
+
+# Orca OS - Safe Desktop Configuration Reset to Factory Defaults
+
+echo "🐋 Orca OS — Konfigurations-Reset"
+echo "=================================="
+read -p "Möchtest du deine Desktop-Konfigurationen (Niri, Noctalia, Ghostty, Hyprland, Fastfetch) auf die sauberen Orca-System-Defaults zurücksetzen? (j/N): " confirm
+
+if [[ ! "$confirm" =~ ^[jJyY]$ ]]; then
+    echo "Abgebrochen."
+    exit 0
+fi
+
+echo "Bereinige lokale Desktop-Konfigurationen..."
+rm -rf "$HOME/.config/niri" "$HOME/.config/noctalia" "$HOME/.config/ghostty" "$HOME/.config/hypr" "$HOME/.config/fastfetch" "$HOME/.local/state/noctalia" 2>/dev/null || true
+
+# Re-seed from /etc/skel
+mkdir -p "$HOME/.config/niri" "$HOME/.config/noctalia" "$HOME/.config/ghostty" "$HOME/.config/hypr" "$HOME/.config/fastfetch" "$HOME/.local/state/noctalia"
+
+[ -f "/etc/skel/.config/niri/config.kdl" ] && cp -f "/etc/skel/.config/niri/config.kdl" "$HOME/.config/niri/config.kdl"
+[ -f "/etc/skel/.config/noctalia/config.toml" ] && cp -f "/etc/skel/.config/noctalia/config.toml" "$HOME/.config/noctalia/config.toml"
+[ -f "/etc/skel/.config/ghostty/config" ] && cp -f "/etc/skel/.config/ghostty/config" "$HOME/.config/ghostty/config"
+[ -f "/etc/skel/.config/hypr/hyprland.conf" ] && cp -f "/etc/skel/.config/hypr/hyprland.conf" "$HOME/.config/hypr/hyprland.conf"
+[ -f "/etc/skel/.config/fastfetch/config.jsonc" ] && cp -f "/etc/skel/.config/fastfetch/config.jsonc" "$HOME/.config/fastfetch/config.jsonc"
+
+touch "$HOME/.local/state/noctalia/.setup-complete"
+
+echo "✨ Konfigurationen erfolgreich auf Orca-Werkseinstellungen zurückgesetzt!"
+echo "   Tipp: Starte deine Session neu oder drücke Super+Shift+E zum Abmelden."
