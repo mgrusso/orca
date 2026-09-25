@@ -1,0 +1,9 @@
+# Build artifacts
+_build/
+*.iso
+*.qcow2
+*.tar.gz
+
+# Local container cache
+.podman/
+.docker/
