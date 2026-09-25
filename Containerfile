@@ -1,23 +1,24 @@
 # Stage 1: Build & Package Collector (Fedora 44)
 FROM fedora:44 AS builder
 
-RUN dnf install -y \
+RUN dnf copr enable -y lionheartp/Hyprland || true && \
+    dnf install -y --skip-unavailable \
     niri \
     hyprland \
     noctalia \
     brightnessctl \
     playerctl \
-    polkit-gnome \
+    mate-polkit \
     papirus-icon-theme \
     adw-gtk3-theme \
-    google-inter-fonts \
+    rsms-inter-fonts \
     jetbrains-mono-fonts
 
 # Collect binaries, libraries, and desktop integration files
 RUN mkdir -p /export/bin /export/libexec /export/lib64 /export/share /export/wayland-sessions && \
     # Binaries
     cp /usr/bin/niri /usr/bin/noctalia /usr/bin/hyprland /usr/bin/brightnessctl /usr/bin/playerctl /export/bin/ 2>/dev/null || true && \
-    cp /usr/libexec/polkit-gnome-authentication-agent-1 /export/libexec/ 2>/dev/null || true && \
+    cp /usr/libexec/polkit-mate-authentication-agent-1 /export/libexec/ 2>/dev/null || true && \
     # Wayland session files
     cp /usr/share/wayland-sessions/niri*.desktop /export/wayland-sessions/ 2>/dev/null || true && \
     cp /usr/share/wayland-sessions/hyprland*.desktop /export/wayland-sessions/ 2>/dev/null || true && \
@@ -29,7 +30,7 @@ RUN mkdir -p /export/bin /export/libexec /export/lib64 /export/share /export/way
             done; \
         fi \
     done && \
-    # Themes and icons
+    # Themes, fonts, and icons
     cp -r /usr/share/icons/Papirus* /export/share/ 2>/dev/null || true && \
     cp -r /usr/share/themes/adw-gtk3* /export/share/ 2>/dev/null || true
 

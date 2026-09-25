@@ -2,7 +2,7 @@
 // Modern scroll-tiling with Noctalia Shell & Ghostty integration
 
 // Start required background services & Noctalia Shell
-spawn-at-startup "/usr/local/libexec/polkit-gnome-authentication-agent-1"
+spawn-at-startup "/usr/local/libexec/polkit-mate-authentication-agent-1"
 spawn-at-startup "noctalia"
 
 input {
