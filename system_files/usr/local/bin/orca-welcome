@@ -10,6 +10,7 @@ from gi.repository import Gtk, Adw, Gio, GLib
 
 CONFIG_DIR = os.path.expanduser("~/.config/orca")
 FLAG_FILE = os.path.join(CONFIG_DIR, "no-show-welcome")
+DEFAULT_BROWSER_FILE = os.path.join(CONFIG_DIR, "default-browser")
 
 
 def is_flatpak_installed(app_id):
@@ -24,11 +25,38 @@ def is_flatpak_installed(app_id):
         return False
 
 
+def get_current_default_browser():
+    if os.path.exists(DEFAULT_BROWSER_FILE):
+        try:
+            with open(DEFAULT_BROWSER_FILE) as f:
+                val = f.read().strip()
+                if val:
+                    return val
+        except Exception:
+            pass
+    return "firefox"
+
+
+def set_default_browser(browser_id, desktop_file=None):
+    os.makedirs(CONFIG_DIR, exist_ok=True)
+    try:
+        with open(DEFAULT_BROWSER_FILE, "w") as f:
+            f.write(browser_id + "\n")
+    except Exception:
+        pass
+
+    if desktop_file:
+        try:
+            subprocess.Popen(["xdg-settings", "set", "default-web-browser", desktop_file])
+        except Exception:
+            pass
+
+
 def launch_or_install_browser(app_id, name):
     if is_flatpak_installed(app_id):
         subprocess.Popen(["flatpak", "run", app_id])
     else:
-        script = f"echo '📦 Installing {name} from Flathub...'; flatpak install -y flathub {app_id} && {app_id} || true"
+        script = f"echo '📦 Installing {name} from Flathub...'; flatpak install -y flathub {app_id} && flatpak run {app_id} || true"
         if subprocess.run(["which", "ghostty"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
             subprocess.Popen(["ghostty", "-e", "bash", "-c", script])
         else:
@@ -41,8 +69,8 @@ class OrcaWelcomeWindow(Adw.ApplicationWindow):
         self.set_default_size(860, 640)
         self.set_title("Welcome to Orca OS")
 
-        self.pages = []
         self.current_page_idx = 0
+        self.browser_buttons = {}
 
         # Main Layout
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
@@ -55,18 +83,18 @@ class OrcaWelcomeWindow(Adw.ApplicationWindow):
         header.set_title_widget(self.title_label)
         main_box.append(header)
 
-        # Gtk.Stack for clean, isolated, non-overlapping page transitions
+        # Gtk.Stack for clean, isolated page transitions
         self.stack = Gtk.Stack()
         self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
-        self.stack.set_transition_duration(280)
+        self.stack.set_transition_duration(260)
         self.stack.set_vexpand(True)
         self.stack.set_hexpand(True)
         main_box.append(self.stack)
 
         # Bottom navigation bar
         bottom_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=16)
-        bottom_box.set_margin_top(16)
-        bottom_box.set_margin_bottom(16)
+        bottom_box.set_margin_top(14)
+        bottom_box.set_margin_bottom(14)
         bottom_box.set_margin_start(24)
         bottom_box.set_margin_end(24)
 
@@ -129,7 +157,25 @@ class OrcaWelcomeWindow(Adw.ApplicationWindow):
             self.current_page_idx += 1
             self.update_nav()
         else:
-            self.close()
+            # Finish wizard
+            self.on_finish()
+
+    def on_finish(self):
+        os.makedirs(CONFIG_DIR, exist_ok=True)
+        # If user did NOT explicitly request to see it on every startup, disable it!
+        if not self.check_show_again.get_active():
+            try:
+                with open(FLAG_FILE, "w") as f:
+                    f.write("1\n")
+            except OSError:
+                pass
+        else:
+            if os.path.exists(FLAG_FILE):
+                try:
+                    os.remove(FLAG_FILE)
+                except OSError:
+                    pass
+        self.close()
 
     def wrap_page(self, widget, max_width=720):
         scroll = Gtk.ScrolledWindow()
@@ -139,8 +185,8 @@ class OrcaWelcomeWindow(Adw.ApplicationWindow):
 
         clamp = Adw.Clamp()
         clamp.set_maximum_size(max_width)
-        clamp.set_margin_top(18)
-        clamp.set_margin_bottom(18)
+        clamp.set_margin_top(14)
+        clamp.set_margin_bottom(14)
         clamp.set_margin_start(18)
         clamp.set_margin_end(18)
         clamp.set_child(widget)
@@ -149,41 +195,53 @@ class OrcaWelcomeWindow(Adw.ApplicationWindow):
         return scroll
 
     def build_page_welcome(self):
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
-        box.set_halign(Gtk.Align.CENTER)
-        box.set_valign(Gtk.Align.CENTER)
-
+        # Clean, centered welcome screen with zero-scroll design
         status = Adw.StatusPage()
         status.set_title("Welcome to Orca OS")
         status.set_description(
-            "An immutable, scroll-tiling workstation powered by Niri, Noctalia Shell & Ghostty.\n"
-            "Fast, stable, and designed for focused productivity."
+            "An immutable workstation built on Project Bluefin.\n"
+            "Powered by Niri scroll-tiling, Noctalia Shell and Ghostty."
         )
         status.set_icon_name("preferences-desktop-theme")
 
-        grp = Adw.PreferencesGroup()
-        grp.set_title("Key Highlights")
+        cards_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=16)
+        cards_box.set_halign(Gtk.Align.CENTER)
+        cards_box.set_margin_top(20)
 
-        row1 = Adw.ActionRow()
-        row1.set_title("Immutable & Atomic Foundation")
-        row1.set_subtitle("Robust OSTree deployment with instantaneous rollback protection.")
-        row1.set_icon_name("security-high-symbolic")
-        grp.add(row1)
+        highlights = [
+            ("security-high-symbolic", "Immutable Core", "Transactional OSTree\nwith instant rollback"),
+            ("view-paged-symbolic", "Scroll-Tiling", "Smooth horizontal window strip\npowered by Niri"),
+            ("color-select-symbolic", "Catppuccin Palette", "System-wide theme\nwith live accent sync"),
+        ]
 
-        row2 = Adw.ActionRow()
-        row2.set_title("Infinite Horizontal Scroll-Tiling")
-        row2.set_subtitle("Smooth, trackpad-friendly window navigation powered by Niri.")
-        row2.set_icon_name("view-paged-symbolic")
-        grp.add(row2)
+        for icon, title, desc in highlights:
+            card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+            card.add_css_class("card")
+            card.set_margin_start(4)
+            card.set_margin_end(4)
+            card.set_margin_top(8)
+            card.set_margin_bottom(8)
+            card.set_size_request(210, -1)
 
-        row3 = Adw.ActionRow()
-        row3.set_title("Catppuccin Palette & Live Accent Sync")
-        row3.set_subtitle("Cohesive aesthetics across terminal, Noctalia bar, and window borders.")
-        row3.set_icon_name("color-select-symbolic")
-        grp.add(row3)
+            ic = Gtk.Image.new_from_icon_name(icon)
+            ic.set_pixel_size(32)
+            ic.set_margin_top(14)
+            card.append(ic)
 
-        status.set_child(grp)
-        wrapped = self.wrap_page(status, max_width=720)
+            lbl_t = Gtk.Label(label=title)
+            lbl_t.add_css_class("heading")
+            card.append(lbl_t)
+
+            lbl_d = Gtk.Label(label=desc)
+            lbl_d.add_css_class("dim-label")
+            lbl_d.set_justify(Gtk.Justification.CENTER)
+            lbl_d.set_margin_bottom(14)
+            card.append(lbl_d)
+
+            cards_box.append(card)
+
+        status.set_child(cards_box)
+        wrapped = self.wrap_page(status, max_width=760)
         self.stack.add_named(wrapped, "welcome")
 
     def build_page_theme(self):
@@ -235,52 +293,69 @@ class OrcaWelcomeWindow(Adw.ApplicationWindow):
     def build_page_browser(self):
         pref_page = Adw.PreferencesPage()
         pref_page.set_title("Web Browsers")
-        pref_page.set_description("Choose your preferred web browser.")
+        pref_page.set_description("Choose and configure your default browser (Super + B).")
 
         grp = Adw.PreferencesGroup()
-        grp.set_title("Recommended Browsers")
-        grp.set_description("Launch pre-installed browsers or install verified Flathub packages.")
+        grp.set_title("Browser Selection & Shortcut (Super + B)")
+        grp.set_description("Choose your preferred browser. Super + B will immediately launch your selected default.")
 
-        # 1. Firefox
-        row_ff = Adw.ActionRow()
-        row_ff.set_title("Mozilla Firefox")
-        row_ff.set_subtitle("Pre-installed Flatpak configured with Orca dark theme integration.")
-        btn_ff = Gtk.Button(label="Launch")
-        btn_ff.set_valign(Gtk.Align.CENTER)
-        btn_ff.add_css_class("suggested-action")
-        btn_ff.connect("clicked", lambda b: subprocess.Popen(["firefox"]))
-        row_ff.add_suffix(btn_ff)
-        grp.add(row_ff)
+        browsers = [
+            ("firefox", "Mozilla Firefox", "org.mozilla.firefox.desktop", "Pre-installed Flatpak configured with Orca dark mode.", True),
+            ("brave", "Brave Browser", "com.brave.Browser.desktop", "Privacy-focused Chromium with built-in ad blocking.", False),
+            ("vivaldi", "Vivaldi Browser", "com.vivaldi.Vivaldi.desktop", "Power-user browser with tab stacks and split-view.", False),
+        ]
 
-        # 2. Brave Browser
-        row_brave = Adw.ActionRow()
-        row_brave.set_title("Brave Browser")
-        row_brave.set_subtitle("Privacy-focused Chromium browser with built-in ad and tracker blocking.")
-        brave_installed = is_flatpak_installed("com.brave.Browser")
-        btn_brave = Gtk.Button(label="Launch" if brave_installed else "Install")
-        btn_brave.set_valign(Gtk.Align.CENTER)
-        if brave_installed:
-            btn_brave.add_css_class("suggested-action")
-        btn_brave.connect("clicked", lambda b: launch_or_install_browser("com.brave.Browser", "Brave Browser"))
-        row_brave.add_suffix(btn_brave)
-        grp.add(row_brave)
+        current_def = get_current_default_browser()
 
-        # 3. Vivaldi Browser
-        row_vivaldi = Adw.ActionRow()
-        row_vivaldi.set_title("Vivaldi Browser")
-        row_vivaldi.set_subtitle("Feature-rich Chromium browser with tab stacks, split screen, and deep customization.")
-        vivaldi_installed = is_flatpak_installed("com.vivaldi.Vivaldi")
-        btn_vivaldi = Gtk.Button(label="Launch" if vivaldi_installed else "Install")
-        btn_vivaldi.set_valign(Gtk.Align.CENTER)
-        if vivaldi_installed:
-            btn_vivaldi.add_css_class("suggested-action")
-        btn_vivaldi.connect("clicked", lambda b: launch_or_install_browser("com.vivaldi.Vivaldi", "Vivaldi Browser"))
-        row_vivaldi.add_suffix(btn_vivaldi)
-        grp.add(row_vivaldi)
+        for b_id, b_name, b_desktop, b_desc, is_preinstalled in browsers:
+            row = Adw.ActionRow()
+            row.set_title(b_name)
+            row.set_subtitle(b_desc)
+
+            btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+            btn_box.set_valign(Gtk.Align.CENTER)
+
+            # Default indicator / toggle button
+            btn_default = Gtk.Button(label="✓ Default (Super+B)" if current_def == b_id else "Set Default")
+            if current_def == b_id:
+                btn_default.add_css_class("suggested-action")
+            btn_default.connect("clicked", self.create_set_default_handler(b_id, b_desktop))
+            self.browser_buttons[b_id] = btn_default
+            btn_box.append(btn_default)
+
+            # Launch or Install action button
+            if is_preinstalled or is_flatpak_installed(f"com.{b_id}.{b_name.split()[0]}"):
+                btn_launch = Gtk.Button(label="Launch")
+                if is_preinstalled:
+                    btn_launch.connect("clicked", lambda b: subprocess.Popen(["firefox"]))
+                else:
+                    app_ref = "com.brave.Browser" if b_id == "brave" else "com.vivaldi.Vivaldi"
+                    btn_launch.connect("clicked", lambda b, ref=app_ref: subprocess.Popen(["flatpak", "run", ref]))
+                btn_box.append(btn_launch)
+            else:
+                app_ref = "com.brave.Browser" if b_id == "brave" else "com.vivaldi.Vivaldi"
+                btn_install = Gtk.Button(label="Install")
+                btn_install.connect("clicked", lambda b, ref=app_ref, n=b_name: launch_or_install_browser(ref, n))
+                btn_box.append(btn_install)
+
+            row.add_suffix(btn_box)
+            grp.add(row)
 
         pref_page.add(grp)
         wrapped = self.wrap_page(pref_page, max_width=720)
         self.stack.add_named(wrapped, "browser")
+
+    def create_set_default_handler(self, browser_id, desktop_file):
+        def handler(btn):
+            set_default_browser(browser_id, desktop_file)
+            for b_key, b_btn in self.browser_buttons.items():
+                if b_key == browser_id:
+                    b_btn.set_label("✓ Default (Super+B)")
+                    b_btn.add_css_class("suggested-action")
+                else:
+                    b_btn.set_label("Set Default")
+                    b_btn.remove_css_class("suggested-action")
+        return handler
 
     def build_page_shortcuts(self):
         pref_page = Adw.PreferencesPage()
@@ -293,6 +368,7 @@ class OrcaWelcomeWindow(Adw.ApplicationWindow):
         shortcuts = [
             ("Super + Space", "Open Noctalia Application Launcher"),
             ("Super + Return / Super + T", "Launch Ghostty Terminal"),
+            ("Super + B", "Launch your default web browser"),
             ("Super + Left / Right", "Navigate scroll-tiling columns (or trackpad gesture)"),
             ("Super + Shift + W", "Shuffle wallpaper and harmonize accent colors"),
             ("Print / Super + Shift + S", "Take screenshot with Satty annotation editor"),
@@ -333,31 +409,17 @@ class OrcaWelcomeWindow(Adw.ApplicationWindow):
         btn_term.connect("clicked", lambda b: subprocess.Popen(["ghostty"]))
         box.append(btn_term)
 
-        check_box = Gtk.CheckButton(label="Show this welcome tour on startup")
-        check_box.set_active(not os.path.exists(FLAG_FILE))
-        check_box.connect("toggled", self.on_autostart_toggled)
-        check_box.set_halign(Gtk.Align.CENTER)
-        check_box.set_margin_top(16)
-        box.append(check_box)
+        # Autostart toggle: Unchecked by default!
+        # When unchecked, clicking "Get Started" creates no-show-welcome so it won't run again.
+        self.check_show_again = Gtk.CheckButton(label="Show this welcome tour on next startup")
+        self.check_show_again.set_active(False)
+        self.check_show_again.set_halign(Gtk.Align.CENTER)
+        self.check_show_again.set_margin_top(16)
+        box.append(self.check_show_again)
 
         status.set_child(box)
         wrapped = self.wrap_page(status, max_width=720)
         self.stack.add_named(wrapped, "finish")
-
-    def on_autostart_toggled(self, btn):
-        os.makedirs(CONFIG_DIR, exist_ok=True)
-        if btn.get_active():
-            if os.path.exists(FLAG_FILE):
-                try:
-                    os.remove(FLAG_FILE)
-                except OSError:
-                    pass
-        else:
-            try:
-                with open(FLAG_FILE, "w") as f:
-                    f.write("1\n")
-            except OSError:
-                pass
 
 
 class OrcaWelcomeApp(Adw.Application):

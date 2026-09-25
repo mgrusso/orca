@@ -131,8 +131,9 @@ binds {
     Mod+T      { spawn "ghostty"; }
     Mod+Space  { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
     Mod+D      { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
-    Mod+B      { spawn "firefox"; }
+    Mod+B      { spawn "orca-browser"; }
     Mod+E      { spawn "nautilus"; }
+
     Mod+C      { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
     Mod+N      { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
     Mod+W      { spawn "noctalia" "msg" "panel-toggle" "wallpaper"; }

@@ -1,0 +1,44 @@
+#!/bin/bash
+set -euo pipefail
+
+# Orca OS - Dynamic Web Browser Dispatcher for Super + B
+
+CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/orca/default-browser"
+
+BROWSER="firefox"
+if [ -f "$CONFIG_FILE" ]; then
+    BROWSER=$(cat "$CONFIG_FILE" | tr -d '[:space:]')
+fi
+
+case "$BROWSER" in
+    brave|com.brave.Browser)
+        if command -v brave-browser >/dev/null 2>&1; then
+            exec brave-browser "$@"
+        elif command -v flatpak >/dev/null 2>&1 && flatpak info com.brave.Browser >/dev/null 2>&1; then
+            exec flatpak run com.brave.Browser "$@"
+        fi
+        ;;
+    vivaldi|com.vivaldi.Vivaldi)
+        if command -v vivaldi >/dev/null 2>&1; then
+            exec vivaldi "$@"
+        elif command -v flatpak >/dev/null 2>&1 && flatpak info com.vivaldi.Vivaldi >/dev/null 2>&1; then
+            exec flatpak run com.vivaldi.Vivaldi "$@"
+        fi
+        ;;
+    firefox|org.mozilla.firefox)
+        if command -v firefox >/dev/null 2>&1; then
+            exec firefox "$@"
+        elif command -v flatpak >/dev/null 2>&1 && flatpak info org.mozilla.firefox >/dev/null 2>&1; then
+            exec flatpak run org.mozilla.firefox "$@"
+        fi
+        ;;
+esac
+
+# Fallback: Try launching via xdg-open or standard firefox
+if command -v firefox >/dev/null 2>&1; then
+    exec firefox "$@"
+elif command -v flatpak >/dev/null 2>&1 && flatpak info org.mozilla.firefox >/dev/null 2>&1; then
+    exec flatpak run org.mozilla.firefox "$@"
+elif command -v xdg-open >/dev/null 2>&1; then
+    exec xdg-open "https://"
+fi
