@@ -1,86 +1,70 @@
 #!/bin/bash
 set -euo pipefail
 
-# Orca OS Release Channel Switcher
+# Orca OS Release Channel Configuration Tool
 
-REGISTRY="ghcr.io/mgrusso/orca"
+CONFIG_DIR="/etc/orca"
+CONFIG_FILE="${CONFIG_DIR}/release-channel"
+DEFAULT_CHANNEL="0.2"
 
-# 1. Determine current deployed channel
-CURRENT_CHANNEL="unbekannt"
-if command -v bootc >/dev/null 2>&1; then
-    CURRENT_IMG=$(bootc status 2>/dev/null | grep -E "image:|Image:" | head -n 1 | awk '{print $NF}' || true)
-    CURRENT_CHANNEL=$(echo "$CURRENT_IMG" | awk -F: '{print $NF}')
-fi
-if [ -z "$CURRENT_CHANNEL" ] || [ "$CURRENT_CHANNEL" = "unbekannt" ]; then
-    if command -v rpm-ostree >/dev/null 2>&1; then
-        CURRENT_IMG=$(rpm-ostree status 2>/dev/null | grep -E "● ostree" | head -n 1 | awk '{print $NF}' || true)
-        CURRENT_CHANNEL=$(echo "$CURRENT_IMG" | awk -F: '{print $NF}')
+# Ensure config directory exists
+if [ ! -d "$CONFIG_DIR" ]; then
+    if [ "$EUID" -eq 0 ] || [ -w "/etc" ]; then
+        mkdir -p "$CONFIG_DIR"
+    else
+        sudo mkdir -p "$CONFIG_DIR"
     fi
 fi
-[ -z "$CURRENT_CHANNEL" ] && CURRENT_CHANNEL="latest"
+
+CURRENT_CHANNEL="$DEFAULT_CHANNEL"
+if [ -f "$CONFIG_FILE" ]; then
+    CURRENT_CHANNEL=$(tr -d '[:space:]' < "$CONFIG_FILE")
+fi
+[ -z "$CURRENT_CHANNEL" ] && CURRENT_CHANNEL="$DEFAULT_CHANNEL"
 
 TARGET_INPUT="${1:-}"
 
 if [ -z "$TARGET_INPUT" ]; then
-    echo "🐋 Orca OS — Release-Channel Konfiguration"
-    echo "=========================================="
-    echo "Aktuell aktiver Channel: [ $CURRENT_CHANNEL ]"
+    echo "🐋 Orca OS — Release Channel Configuration"
+    echo "==========================================="
+    echo "Currently configured channel: [ $CURRENT_CHANNEL ]"
     echo ""
-    echo "Verfügbare Channels:"
-    echo "  • 0.1     (oder v0.1)   -> Wartungs-Channel: Immer das letzte v0.1.x Release"
-    echo "  • 0.2     (oder v0.2)   -> Aktueller Channel: Immer das letzte v0.2.x Release"
-    echo "  • latest                -> Bleeding Edge (Täglicher Entwicklungs-Stand von main)"
+    echo "Available channels:"
+    echo "  • 0.2     (or v0.2)   -> Current release line (default, recommended)"
+    echo "  • 0.1     (or v0.1)   -> Maintenance release line: latest v0.1.x"
+    echo "  • latest              -> Bleeding Edge (daily development build from main)"
     echo ""
-    read -p "Welchen Release-Channel möchtest du nutzen? (z.B. 0.2 oder latest): " TARGET_INPUT
+    read -p "Select release channel [0.2/0.1/latest]: " TARGET_INPUT
 fi
 
 if [ -z "$TARGET_INPUT" ]; then
-    echo "Kein Channel angegeben. Vorgang abgebrochen."
+    echo "No release channel specified. Aborted."
     exit 0
 fi
 
-# Normalize target channel
+# Normalize channel
 case "$TARGET_INPUT" in
-    latest|dev|edge)
-        TARGET_TAG="latest"
-        CHANNEL_NAME="latest (Bleeding Edge Entwicklung)"
+    0.2|v0.2)
+        CLEAN_CHANNEL="0.2"
         ;;
     0.1|v0.1)
-        TARGET_TAG="v0.1"
-        CHANNEL_NAME="v0.1 (Wartungs-Channel)"
+        CLEAN_CHANNEL="0.1"
         ;;
-    0.2|v0.2)
-        TARGET_TAG="v0.2"
-        CHANNEL_NAME="v0.2 (Aktueller Standard-Channel)"
-        ;;
-    0.3|v0.3)
-        TARGET_TAG="v0.3"
-        CHANNEL_NAME="v0.3 (Zukünftiger Meilenstein)"
+    latest|dev|edge)
+        CLEAN_CHANNEL="latest"
         ;;
     *)
-        # Allow any custom tag or version (e.g. specific v0.1.9)
-        TARGET_TAG="$TARGET_INPUT"
-        CHANNEL_NAME="$TARGET_TAG"
+        CLEAN_CHANNEL="$TARGET_INPUT"
         ;;
 esac
 
-echo ""
-echo "Wechsle Release-Channel auf: $CHANNEL_NAME ($REGISTRY:$TARGET_TAG)..."
-
-if command -v bootc >/dev/null 2>&1; then
-    sudo bootc switch "$REGISTRY:$TARGET_TAG"
-elif command -v rpm-ostree >/dev/null 2>&1; then
-    # Detect transport (ostree-image-signed vs ostree-unverified-registry)
-    if rpm-ostree status 2>/dev/null | grep -q "ostree-image-signed"; then
-        sudo rpm-ostree rebase "ostree-image-signed:docker://$REGISTRY:$TARGET_TAG"
-    else
-        sudo rpm-ostree rebase "ostree-unverified-registry:$REGISTRY:$TARGET_TAG"
-    fi
+# Write configuration
+if [ -w "$CONFIG_DIR" ] || [ "$EUID" -eq 0 ]; then
+    echo "$CLEAN_CHANNEL" > "$CONFIG_FILE"
 else
-    echo "❌ Fehler: Weder bootc noch rpm-ostree auf dem System gefunden."
-    exit 1
+    echo "$CLEAN_CHANNEL" | sudo tee "$CONFIG_FILE" >/dev/null
 fi
 
 echo ""
-echo "✨ Release-Channel erfolgreich auf '$TARGET_TAG' umgestellt!"
-echo "🔄 Führe 'sudo systemctl reboot' aus, um das neue Image zu starten."
+echo "✨ Release channel successfully configured to '$CLEAN_CHANNEL'!"
+echo "📦 Run 'ujust orca-update' when you are ready to download and apply updates for this channel."

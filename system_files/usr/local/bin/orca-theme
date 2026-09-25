@@ -15,14 +15,14 @@ if [ -z "$THEME" ]; then
     fi
     echo "🐋 Orca OS — Desktop Theme Switcher"
     echo "====================================="
-    echo "Aktuelles Farbschema: [ $CURRENT ]"
+    echo "Current color scheme: [ $CURRENT ]"
     echo ""
-    read -p "Möchtest du zu 'dark' (Catppuccin Mocha) oder 'light' (Catppuccin Latte) wechseln? [dark/light]: " THEME
+    read -p "Switch to 'dark' (Catppuccin Mocha) or 'light' (Catppuccin Latte)? [dark/light]: " THEME
 fi
 
 case "$THEME" in
-    dark|mocha|dunkel)
-        echo "🎨 Schalte um auf Dark Mode (Catppuccin Mocha)..."
+    dark|mocha)
+        echo "🎨 Switching to Dark Mode (Catppuccin Mocha)..."
 
         # 1. GNOME / GTK Settings
         if command -v gsettings >/dev/null 2>&1; then
@@ -56,11 +56,11 @@ case "$THEME" in
             flatpak override --user --env=GTK_THEME=adw-gtk3-dark org.mozilla.firefox 2>/dev/null || true
         fi
 
-        echo "✨ Dark Mode (Catppuccin Mocha) erfolgreich aktiviert!"
+        echo "✨ Dark Mode (Catppuccin Mocha) successfully applied!"
         ;;
 
-    light|latte|hell)
-        echo "🎨 Schalte um auf Light Mode (Catppuccin Latte)..."
+    light|latte)
+        echo "🎨 Switching to Light Mode (Catppuccin Latte)..."
 
         # 1. GNOME / GTK Settings
         if command -v gsettings >/dev/null 2>&1; then
@@ -94,11 +94,11 @@ case "$THEME" in
             flatpak override --user --env=GTK_THEME=adw-gtk3 org.mozilla.firefox 2>/dev/null || true
         fi
 
-        echo "✨ Light Mode (Catppuccin Latte) erfolgreich aktiviert!"
+        echo "✨ Light Mode (Catppuccin Latte) successfully applied!"
         ;;
 
     *)
-        echo "❌ Ungültiges Farbschema: '$THEME'. Verwende 'dark' oder 'light'."
+        echo "❌ Invalid color scheme: '$THEME'. Use 'dark' or 'light'."
         exit 1
         ;;
 esac

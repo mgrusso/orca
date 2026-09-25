@@ -13,11 +13,11 @@ elif [ -f "$TARGET" ]; then
 fi
 
 if [ -z "$WALLPAPER" ]; then
-    echo "❌ Kein Hintergrundbild gefunden."
+    echo "❌ No wallpaper image found."
     exit 1
 fi
 
-echo "🐋 Synchronisiere Wallpaper: $WALLPAPER"
+echo "🐋 Synchronizing wallpaper: $WALLPAPER"
 
 # 1. Update Noctalia Wallpaper
 if command -v noctalia >/dev/null 2>&1; then
@@ -44,7 +44,7 @@ except Exception:
     print('#89b4fa')
 " 2>/dev/null || echo "#89b4fa")
 
-echo "🎨 Erkannte Akzentfarbe: $ACCENT"
+echo "🎨 Detected accent color: $ACCENT"
 
 # 3. Synchronize Niri focus ring
 NIRI_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/niri/config.kdl"
@@ -54,7 +54,7 @@ fi
 
 # 4. Desktop Notification
 if command -v notify-send >/dev/null 2>&1; then
-    notify-send "Orca Wallpaper Sync" "Wallpaper gewechselt & Akzentfarbe ($ACCENT) synchronisiert." -i preferences-desktop-wallpaper
+    notify-send "Orca Wallpaper Sync" "Wallpaper updated and accent color ($ACCENT) synchronized." -i preferences-desktop-wallpaper
 fi
 
-echo "✨ Wallpaper und Niri-Akzentfarbe erfolgreich synchronisiert!"
+echo "✨ Wallpaper and Niri focus ring accent color successfully synchronized!"

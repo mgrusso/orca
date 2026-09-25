@@ -10,7 +10,7 @@ if pidof wf-recorder >/dev/null 2>&1 || [ -f "$PID_FILE" ]; then
     killall -SIGINT wf-recorder 2>/dev/null || true
     rm -f "$PID_FILE"
     if command -v notify-send >/dev/null 2>&1; then
-        notify-send "Orca Screen Recorder" "Aufnahme beendet und gespeichert." -i video-x-generic
+        notify-send "Orca Screen Recorder" "Screen recording stopped and saved." -i video-x-generic
     fi
     exit 0
 fi
@@ -24,7 +24,7 @@ if [ -z "$GEOM" ]; then
 fi
 
 if command -v notify-send >/dev/null 2>&1; then
-    notify-send "Orca Screen Recorder" "Aufnahme gestartet... (Super+Shift+R zum Beenden)" -i media-record
+    notify-send "Orca Screen Recorder" "Screen recording started... (Press Super+Shift+R to stop)" -i media-record
 fi
 
 wf-recorder -g "$GEOM" -f "$FILENAME" &

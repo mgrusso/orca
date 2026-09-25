@@ -1,44 +1,44 @@
 # Orca OS Custom Management Recipes
 # Powering 'ujust orca-*' commands
 
-# Wechsle den Orca OS Release-Channel (z. B. '0.2', '0.1' oder 'latest')
+# Configure the active Orca OS release channel (e.g. '0.2', '0.1' or 'latest')
 orca-release-channel channel="":
     #!/usr/bin/env bash
     orca-release-channel "{{channel}}"
 
-# Schalte das Farbschema synchron zwischen Catppuccin Mocha ('dark') und Latte ('light') um
+# Switch desktop color scheme synchronously between Catppuccin Mocha ('dark') and Latte ('light')
 orca-theme theme="":
     #!/usr/bin/env bash
     orca-theme "{{theme}}"
 
-# Wechsle das Hintergrundbild und synchronisiere die Niri-Akzentfarben
+# Set wallpaper and synchronize Niri focus ring accent color
 orca-wallpaper-sync target="random":
     #!/usr/bin/env bash
     orca-wallpaper-sync "{{target}}"
 
-# Aktualisiere das gesamte System: OS-Image, Flatpaks, Homebrew und Distrobox-Container
+# Update the entire system: base OS image, Flatpaks, Homebrew and Distrobox containers
 orca-update:
     #!/usr/bin/env bash
     orca-update
 
-# Setze Desktop-Konfigurationen (Niri, Noctalia, Ghostty, Hyprland) auf saubere Orca-Defaults zurück
+# Reset desktop configurations (Niri, Noctalia, Ghostty, Hyprland, Fastfetch) to default settings
 orca-clean:
     #!/usr/bin/env bash
     orca-clean
 
-# Erstelle oder starte einen schnellen Distrobox-Entwicklungscontainer
+# Launch or create an instant Distrobox development container
 orca-dev-box name="orca-dev" image="ghcr.io/ublue-os/fedora-toolbox:latest":
     #!/usr/bin/env bash
     orca-dev-box "{{name}}" "{{image}}"
 
-# Starte PipeWire- und WirePlumber-Audiodienste neu bei Ton- oder Mikrofonproblemen
+# Restart PipeWire and WirePlumber audio services in case of sound or microphone issues
 orca-fix-audio:
     #!/usr/bin/env bash
-    echo "Starte PipeWire und WirePlumber neu..."
+    echo "Restarting PipeWire and WirePlumber..."
     systemctl --user restart pipewire pipewire-pulse wireplumber
-    echo "✨ Audio-Subsystem neu gestartet."
+    echo "✨ Audio subsystem successfully restarted."
 
-# Zeige Orca OS System- und Hardware-Informationen
+# Display Orca OS system and hardware information
 orca-info:
     #!/usr/bin/env bash
     if command -v fastfetch >/dev/null 2>&1; then

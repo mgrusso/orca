@@ -1,18 +1,18 @@
 #!/bin/bash
 set -euo pipefail
 
-# Orca OS - Safe Desktop Configuration Reset to Factory Defaults
+# Orca OS - Reset Desktop Configuration to System Defaults
 
-echo "🐋 Orca OS — Konfigurations-Reset"
+echo "🐋 Orca OS — Configuration Reset"
 echo "=================================="
-read -p "Möchtest du deine Desktop-Konfigurationen (Niri, Noctalia, Ghostty, Hyprland, Fastfetch) auf die sauberen Orca-System-Defaults zurücksetzen? (j/N): " confirm
+read -p "Reset desktop configurations (Niri, Noctalia, Ghostty, Hyprland, Fastfetch) to default Orca settings? (y/N): " confirm
 
-if [[ ! "$confirm" =~ ^[jJyY]$ ]]; then
-    echo "Abgebrochen."
+if [[ ! "$confirm" =~ ^[yY]$ ]]; then
+    echo "Aborted."
     exit 0
 fi
 
-echo "Bereinige lokale Desktop-Konfigurationen..."
+echo "Cleaning local user configuration files..."
 rm -rf "$HOME/.config/niri" "$HOME/.config/noctalia" "$HOME/.config/ghostty" "$HOME/.config/hypr" "$HOME/.config/fastfetch" "$HOME/.local/state/noctalia" 2>/dev/null || true
 
 # Re-seed from /etc/skel
@@ -25,6 +25,7 @@ mkdir -p "$HOME/.config/niri" "$HOME/.config/noctalia" "$HOME/.config/ghostty" "
 [ -f "/etc/skel/.config/fastfetch/config.jsonc" ] && cp -f "/etc/skel/.config/fastfetch/config.jsonc" "$HOME/.config/fastfetch/config.jsonc"
 
 touch "$HOME/.local/state/noctalia/.setup-complete"
+touch "$HOME/.config/no-show-user-motd"
 
-echo "✨ Konfigurationen erfolgreich auf Orca-Werkseinstellungen zurückgesetzt!"
-echo "   Tipp: Starte deine Session neu oder drücke Super+Shift+E zum Abmelden."
+echo "✨ Configurations successfully restored to default Orca OS settings!"
+echo "   Tip: Restart your session or press Super+Shift+E to log out."

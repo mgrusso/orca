@@ -3,52 +3,98 @@ set -euo pipefail
 
 # Orca OS - Synchronous Full System Updater
 
-echo "🐋 Orca OS — Gesamtes System wird aktualisiert..."
+CONFIG_FILE="/etc/orca/release-channel"
+DEFAULT_CHANNEL="0.2"
+
+CHANNEL="$DEFAULT_CHANNEL"
+if [ -f "$CONFIG_FILE" ]; then
+    CHANNEL=$(tr -d '[:space:]' < "$CONFIG_FILE")
+fi
+[ -z "$CHANNEL" ] && CHANNEL="$DEFAULT_CHANNEL"
+
+case "$CHANNEL" in
+    latest|dev|edge)
+        TARGET_TAG="latest"
+        ;;
+    0.1|v0.1)
+        TARGET_TAG="v0.1"
+        ;;
+    0.2|v0.2)
+        TARGET_TAG="v0.2"
+        ;;
+    0.3|v0.3)
+        TARGET_TAG="v0.3"
+        ;;
+    *)
+        TARGET_TAG="$CHANNEL"
+        ;;
+esac
+
+TARGET_IMAGE="ghcr.io/mgrusso/orca:$TARGET_TAG"
+
+echo "🐋 Orca OS — Performing Full System Update..."
 echo "=================================================="
+echo "Active release channel: $CHANNEL ($TARGET_IMAGE)"
 
 # 1. Base OS Image Update
 echo ""
-echo "📦 [1/4] Betriebssystem-Image aktualisieren..."
+echo "📦 [1/4] Updating base operating system image..."
 if command -v bootc >/dev/null 2>&1; then
-    sudo bootc upgrade || true
+    CURRENT_IMG=$(bootc status 2>/dev/null | grep -E "image:|Image:" | head -n 1 | awk '{print $NF}' || true)
+    if [[ "$CURRENT_IMG" == *":$TARGET_TAG" ]]; then
+        sudo bootc upgrade || true
+    else
+        echo "Switching base image to channel '$TARGET_TAG'..."
+        sudo bootc switch "$TARGET_IMAGE" || true
+    fi
 elif command -v rpm-ostree >/dev/null 2>&1; then
-    rpm-ostree upgrade || true
+    CURRENT_IMG=$(rpm-ostree status 2>/dev/null | grep -E "● ostree" | head -n 1 | awk '{print $NF}' || true)
+    if [[ "$CURRENT_IMG" == *":$TARGET_TAG" ]]; then
+        rpm-ostree upgrade || true
+    else
+        echo "Switching base image to channel '$TARGET_TAG'..."
+        if rpm-ostree status 2>/dev/null | grep -q "ostree-image-signed"; then
+            sudo rpm-ostree rebase "ostree-image-signed:docker://$TARGET_IMAGE" || true
+        else
+            sudo rpm-ostree rebase "ostree-unverified-registry:$TARGET_IMAGE" || true
+        fi
+    fi
 else
-    echo "Weder bootc noch rpm-ostree gefunden (übersprungen)."
+    echo "Neither bootc nor rpm-ostree detected (skipped)."
 fi
 
 # 2. Flatpaks Update
 echo ""
-echo "📦 [2/4] Flatpak-Anwendungen aktualisieren..."
+echo "📦 [2/4] Updating Flatpak applications..."
 if command -v flatpak >/dev/null 2>&1; then
     flatpak update -y || true
 else
-    echo "Flatpak nicht installiert (übersprungen)."
+    echo "Flatpak not found (skipped)."
 fi
 
 # 3. Homebrew Update
 echo ""
-echo "📦 [3/4] Homebrew Pakete aktualisieren..."
+echo "📦 [3/4] Updating Homebrew packages..."
 if [ -x "/home/linuxbrew/.linuxbrew/bin/brew" ]; then
     eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv 2>/dev/null)"
     brew update && brew upgrade || true
 else
-    echo "Homebrew nicht vorhanden (übersprungen)."
+    echo "Homebrew not initialized (skipped)."
 fi
 
 # 4. Distrobox Containers Update
 echo ""
-echo "📦 [4/4] Distrobox-Container aktualisieren..."
+echo "📦 [4/4] Updating Distrobox containers..."
 if command -v distrobox >/dev/null 2>&1; then
     distrobox upgrade -a || true
 else
-    echo "Distrobox nicht vorhanden (übersprungen)."
+    echo "Distrobox not found (skipped)."
 fi
 
 echo ""
 echo "=================================================="
-echo "✨ Orca OS ist jetzt auf dem neuesten Stand!"
+echo "✨ Orca OS is now up to date!"
 if [ -f /run/reboot-required ] || (command -v rpm-ostree >/dev/null 2>&1 && rpm-ostree status | grep -q "Staged: yes"); then
-    echo "🔄 Ein Neustart ist erforderlich, um die neuen Systemaktualisierungen anzuwenden."
-    echo "   Führe 'sudo systemctl reboot' aus, wenn du bereit bist."
+    echo "🔄 A reboot is required to apply the staged system changes."
+    echo "   Run 'sudo systemctl reboot' when you are ready."
 fi

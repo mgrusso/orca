@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Orca OS Screenshot Utility (grim + slurp + satty/swappy)
-SHOT_DIR="${XDG_PICTURES_DIR:-$HOME/Bilder}/Screenshots"
+SHOT_DIR="${XDG_PICTURES_DIR:-$HOME/Pictures}/Screenshots"
 mkdir -p "$SHOT_DIR"
 FILENAME="$SHOT_DIR/Screenshot_$(date +%Y-%m-%d_%H-%M-%S).png"
 
@@ -20,7 +20,7 @@ case "$MODE" in
                 wl-copy < "$FILENAME"
             fi
             if command -v notify-send >/dev/null 2>&1; then
-                notify-send "Screenshot erstellt" "Gespeichert unter $FILENAME und in Zwischenablage kopiert." -i camera-photo
+                notify-send "Screenshot Captured" "Saved to $FILENAME and copied to clipboard." -i camera-photo
             fi
         fi
         ;;
@@ -39,7 +39,7 @@ case "$MODE" in
                 wl-copy < "$FILENAME"
             fi
             if command -v notify-send >/dev/null 2>&1; then
-                notify-send "Screenshot erstellt" "Gespeichert unter $FILENAME und in Zwischenablage kopiert." -i camera-photo
+                notify-send "Screenshot Captured" "Saved to $FILENAME and copied to clipboard." -i camera-photo
             fi
         fi
         ;;
