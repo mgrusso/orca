@@ -9,13 +9,14 @@ RUN (dnf5 -y copr enable lionheartp/Hyprland || dnf -y copr enable lionheartp/Hy
     (dnf5 -y copr enable solopasha/hyprland || dnf -y copr enable solopasha/hyprland || true) && \
     (dnf5 -y copr enable scottames/ghostty || dnf -y copr enable scottames/ghostty || true)
 
-# Install tiling window managers, terminal, desktop shell, utilities, and theming
-# (Note: Nautilus, GNOME integration, PipeWire, Power Profiles and Homebrew are native in bluefin:stable)
+# Install tiling window managers, terminal, desktop shell, utilities, wallpaper setter, and theming
+# (Note: Nautilus, GNOME integration, PipeWire, Power Profiles, Bluefin Wallpapers and Homebrew are native in bluefin:stable)
 RUN (rpm-ostree install \
         niri \
         hyprland \
         ghostty \
         noctalia \
+        swaybg \
         brightnessctl \
         playerctl \
         wl-clipboard \
@@ -30,6 +31,7 @@ RUN (rpm-ostree install \
         hyprland \
         ghostty \
         noctalia \
+        swaybg \
         brightnessctl \
         playerctl \
         wl-clipboard \

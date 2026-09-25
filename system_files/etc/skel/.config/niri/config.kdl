@@ -2,8 +2,9 @@
 // Modern scroll-tiling with Noctalia Shell & Ghostty integration
 
 // Start required background services & Noctalia Shell
-spawn-at-startup "/usr/local/libexec/polkit-mate-authentication-agent-1"
+spawn-at-startup "/usr/libexec/polkit-mate-authentication-agent-1"
 spawn-at-startup "noctalia"
+spawn-at-startup "bash" "-c" "swaybg -i $(find /usr/share/backgrounds/ -type f \\( -name '*.png' -o -name '*.jpg' -o -name '*.webp' \\) | grep -i bluefin | head -n 1 || echo /usr/share/backgrounds/default.png) -m fill"
 
 input {
     keyboard {
