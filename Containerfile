@@ -4,14 +4,17 @@ LABEL org.opencontainers.image.title="Orca" \
       org.opencontainers.image.description="Bluefin customized with Niri, Noctalia Shell and Ghostty" \
       org.opencontainers.image.vendor="mgrusso"
 
-# Enable COPR repositories for Hyprland if required
-RUN dnf5 -y copr enable lionheartp/Hyprland || dnf -y copr enable lionheartp/Hyprland || true && \
-    dnf5 -y copr enable solopasha/hyprland || dnf -y copr enable solopasha/hyprland || true
+# Enable COPR repositories for Hyprland and Ghostty
+RUN (dnf5 -y copr enable lionheartp/Hyprland || dnf -y copr enable lionheartp/Hyprland || true) && \
+    (dnf5 -y copr enable solopasha/hyprland || dnf -y copr enable solopasha/hyprland || true) && \
+    (dnf5 -y copr enable scottames/ghostty || dnf -y copr enable scottames/ghostty || true)
 
-# Install tiling window managers, desktop shell, utilities, and theming
+# Install tiling window managers, terminal, desktop shell, utilities, and theming
+# (Note: Homebrew is already natively included in bluefin:stable at /home/linuxbrew/.linuxbrew)
 RUN (rpm-ostree install \
         niri \
         hyprland \
+        ghostty \
         noctalia \
         brightnessctl \
         playerctl \
@@ -24,6 +27,7 @@ RUN (rpm-ostree install \
     (dnf5 install -y \
         niri \
         hyprland \
+        ghostty \
         noctalia \
         brightnessctl \
         playerctl \
