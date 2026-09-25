@@ -58,7 +58,7 @@ binds {
     Mod+T      { spawn "ghostty"; }
     Mod+Space  { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
     Mod+D      { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
-    Mod+B      { spawn "gtk-launch" "org.mozilla.firefox"; }
+    Mod+B      { spawn "firefox"; }
     Mod+E      { spawn "nautilus"; }
     Mod+C      { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
     Mod+N      { spawn "noctalia" "msg" "panel-toggle" "control-center"; }

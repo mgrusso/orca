@@ -1,0 +1,3 @@
+#!/bin/sh
+# Transparent wrapper to launch Flatpak Firefox from CLI or window manager
+exec flatpak run org.mozilla.firefox "$@"
