@@ -60,8 +60,9 @@ fi
 # 6. Ensure ublue-user-setup is masked in the user session to prevent false lockscreen warnings
 systemctl --user mask ublue-user-setup.service 2>/dev/null || true
 
-# 7. Apply dark theme override for Flatpak Firefox to ensure unified look
+# 7. Ensure Flathub remote exists and apply dark theme override for Flatpak Firefox
 if command -v flatpak >/dev/null 2>&1; then
+    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo 2>/dev/null || true
     flatpak override --user --env=GTK_THEME=adw-gtk3-dark org.mozilla.firefox 2>/dev/null || true
 fi
 
