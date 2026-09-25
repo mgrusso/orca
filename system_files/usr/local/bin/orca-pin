@@ -1,0 +1,34 @@
+#!/bin/bash
+set -euo pipefail
+
+# Orca OS Deployment Pinning Tool
+
+ACTION="${1:-pin}"
+
+echo "🐋 Orca OS — Deployment Pinning"
+echo "================================"
+
+case "$ACTION" in
+    pin)
+        echo "Pinning current working deployment (index 0)..."
+        sudo ostree admin pin 0
+        echo "✨ Current deployment permanently pinned! It will not be pruned by future updates."
+        ;;
+    unpin)
+        INDEX="${2:-0}"
+        echo "Unpinning deployment index $INDEX..."
+        sudo ostree admin pin --unpin "$INDEX"
+        echo "✨ Deployment $INDEX unpinned."
+        ;;
+    list|status)
+        if command -v rpm-ostree >/dev/null 2>&1; then
+            rpm-ostree status
+        elif command -v ostree >/dev/null 2>&1; then
+            ostree admin status
+        fi
+        ;;
+    *)
+        echo "Usage: orca-pin [pin|unpin <index>|list]"
+        exit 1
+        ;;
+esac

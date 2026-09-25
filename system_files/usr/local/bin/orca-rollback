@@ -1,0 +1,27 @@
+#!/bin/bash
+set -euo pipefail
+
+# Orca OS Rollback Tool - Revert to previous deployment
+
+echo "🐋 Orca OS — System Rollback"
+echo "============================="
+
+if command -v bootc >/dev/null 2>&1; then
+    echo "Rolling back to previous deployment using bootc..."
+    sudo bootc rollback
+elif command -v rpm-ostree >/dev/null 2>&1; then
+    echo "Rolling back to previous deployment using rpm-ostree..."
+    sudo rpm-ostree rollback
+else
+    echo "❌ Error: Neither bootc nor rpm-ostree found on this system."
+    exit 1
+fi
+
+echo ""
+echo "✨ Rollback successfully prepared!"
+read -p "Do you want to reboot into the previous release now? (y/N): " confirm
+if [[ "$confirm" =~ ^[yY]$ ]]; then
+    sudo systemctl reboot
+else
+    echo "Reboot manually with 'sudo systemctl reboot' to complete the rollback."
+fi

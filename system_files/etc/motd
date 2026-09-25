@@ -1,9 +1,10 @@
 🐋 Welcome to Orca OS!
 ──────────────────────────────────────────────────────────
 • ujust orca-update          - Update OS, Flatpaks, Brew & containers
-• ujust orca-clean           - Reset desktop settings to factory defaults
+• ujust orca-rollback        - Roll back to previous OS release
 • ujust orca-theme           - Switch between Catppuccin Mocha & Latte
 • ujust orca-release-channel - Switch release channel (0.1, 0.2, latest)
+• ujust orca-clean           - Reset desktop settings to factory defaults
 • ujust orca-dev-box         - Launch isolated Distrobox dev container
 • Super + Space              - Noctalia Application Launcher
 • Super + ?                  - Show keyboard shortcuts cheatsheet

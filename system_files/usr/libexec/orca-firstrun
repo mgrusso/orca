@@ -73,6 +73,11 @@ if command -v flatpak >/dev/null 2>&1; then
     flatpak override --user --env=GTK_THEME=adw-gtk3-dark org.mozilla.firefox 2>/dev/null || true
 fi
 
+# 7b. Ensure GRUB bootloader menu is always visible for 5s with previous release entry
+if command -v grub2-editenv >/dev/null 2>&1; then
+    grub2-editenv - set menu_auto_hide=0 2>/dev/null || true
+fi
+
 # 8. Clean up any legacy versioned stamp files and mark first run permanently completed
 rm -f "${STATE_DIR}"/firstrun-v*.done 2>/dev/null || true
 touch "$STAMP_FILE"

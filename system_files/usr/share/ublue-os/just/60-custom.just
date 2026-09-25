@@ -21,6 +21,16 @@ orca-update:
     #!/usr/bin/env bash
     orca-update
 
+# Roll back to the previous OS deployment from before the last update
+orca-rollback:
+    #!/usr/bin/env bash
+    orca-rollback
+
+# Pin current deployment to permanently protect it from being pruned by future updates
+orca-pin action="pin" index="0":
+    #!/usr/bin/env bash
+    orca-pin "{{action}}" "{{index}}"
+
 # Reset desktop configurations (Niri, Noctalia, Ghostty, Hyprland, Fastfetch) to default settings
 orca-clean:
     #!/usr/bin/env bash
