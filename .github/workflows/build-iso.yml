@@ -75,6 +75,7 @@ jobs:
       - name: Prepare ISO artifact
         id: prepare-iso
         run: |
+          sudo chown -R $USER:$USER output/
           ISO_SRC=$(find output/ -type f \( -name "*.iso" -o -name "install.iso" -o -name "boot.iso" \) | head -n 1)
           if [ -z "$ISO_SRC" ] || [ ! -f "$ISO_SRC" ]; then
             echo "❌ Error: No ISO file generated in output directory!"
