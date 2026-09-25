@@ -1,0 +1,12 @@
+[Unit]
+Description=Orca First-Run Desktop Setup
+ConditionUser=!root
+After=basic.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/orca-firstrun
+RemainAfterExit=yes
+
+[Install]
+WantedBy=default.target

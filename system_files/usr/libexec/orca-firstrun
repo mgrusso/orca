@@ -1,0 +1,33 @@
+#!/bin/bash
+set -euo pipefail
+
+# Orca First-Run Desktop Setup & Migration Helper
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/orca"
+STAMP_FILE="${STATE_DIR}/firstrun-v0.1.3.done"
+
+# Only run once per target release
+if [ -f "$STAMP_FILE" ]; then
+    exit 0
+fi
+
+mkdir -p "$STATE_DIR"
+
+# Clean stale user configs that block system-wide Orca fallbacks
+rm -rf "$HOME/.config/niri" "$HOME/.config/noctalia" "$HOME/.local/state/noctalia" "$HOME/.config/hypr" 2>/dev/null || true
+
+# Seed modern Ghostty configuration with Catppuccin Mocha & transparency
+mkdir -p "$HOME/.config/ghostty"
+if [ -f "/etc/skel/.config/ghostty/config" ]; then
+    cp -f "/etc/skel/.config/ghostty/config" "$HOME/.config/ghostty/config"
+fi
+
+# Ensure ublue-user-setup is masked in the user systemd manager to prevent false lockscreen warnings
+systemctl --user mask ublue-user-setup.service 2>/dev/null || true
+
+# Apply dark theme override for Flatpak Firefox to ensure unified look
+if command -v flatpak >/dev/null 2>&1; then
+    flatpak override --user --env=GTK_THEME=adw-gtk3-dark org.mozilla.firefox 2>/dev/null || true
+fi
+
+# Create stamp file to prevent re-running on subsequent boots
+touch "$STAMP_FILE"

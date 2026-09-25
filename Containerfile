@@ -47,6 +47,9 @@ RUN (rpm-ostree install \
 # Copy desktop integration, system configurations, and user skel dotfiles
 COPY system_files/ /
 
+# Ensure execution permissions for system helper scripts
+RUN chmod +x /usr/libexec/orca-firstrun /usr/local/bin/firefox
+
 # Compile gsettings schema overrides for system-wide dark mode & theming
 RUN glib-compile-schemas /usr/share/glib-2.0/schemas/
 
