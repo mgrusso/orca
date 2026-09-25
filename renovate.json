@@ -1,0 +1,26 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits"
+  ],
+  "semanticCommitType": "chore",
+  "semanticCommitScope": "deps",
+  "automerge": true,
+  "automergeType": "branch",
+  "packageRules": [
+    {
+      "matchPackagePatterns": [
+        "^ghcr.io/projectbluefin/dakota",
+        "^fedora"
+      ],
+      "groupName": "base-images",
+      "automerge": true
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "github-actions",
+      "automerge": true
+    }
+  ]
+}
