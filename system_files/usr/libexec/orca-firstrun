@@ -3,9 +3,9 @@ set -euo pipefail
 
 # Orca First-Run Desktop Setup & Migration Helper
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/orca"
-STAMP_FILE="${STATE_DIR}/firstrun-v0.1.5.done"
+STAMP_FILE="${STATE_DIR}/firstrun.done"
 
-# Only run once per target release
+# Only run once on initial installation / onboarding
 if [ -f "$STAMP_FILE" ]; then
     exit 0
 fi
@@ -65,5 +65,6 @@ if command -v flatpak >/dev/null 2>&1; then
     flatpak override --user --env=GTK_THEME=adw-gtk3-dark org.mozilla.firefox 2>/dev/null || true
 fi
 
-# 8. Mark first run completed
+# 8. Clean up any legacy versioned stamp files and mark first run permanently completed
+rm -f "${STATE_DIR}"/firstrun-v*.done 2>/dev/null || true
 touch "$STAMP_FILE"
