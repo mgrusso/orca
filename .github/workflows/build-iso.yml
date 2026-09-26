@@ -193,16 +193,7 @@ jobs:
             echo "Attaching S3 direct download link to release ${{ inputs.image_tag }} notes..."
             CURRENT_NOTES=$(gh release view "${{ inputs.image_tag }}" --json body -q .body || true)
             if ! echo "$CURRENT_NOTES" | grep -q "$DOWNLOAD_URL"; then
-              UPDATED_NOTES=$(cat << EOF
-$CURRENT_NOTES
-
----
-
-### 💿 Direct Installation ISO Download
-* **Bootable ISO:** [$TARGET_ISO]($DOWNLOAD_URL)
-* **SHA256 Checksum:** [${TARGET_ISO}-CHECKSUM]($CHECKSUM_URL)
-EOF
-              )
+              UPDATED_NOTES=$(printf "%s\n\n---\n\n### 💿 Direct Installation ISO Download\n* **Bootable ISO:** [%s](%s)\n* **SHA256 Checksum:** [%s](%s)\n" "$CURRENT_NOTES" "$TARGET_ISO" "$DOWNLOAD_URL" "${TARGET_ISO}-CHECKSUM" "$CHECKSUM_URL")
               gh release edit "${{ inputs.image_tag }}" --notes "$UPDATED_NOTES" || true
             fi
           fi
