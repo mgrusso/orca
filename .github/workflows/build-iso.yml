@@ -4,9 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       image_tag:
-        description: 'Image tag to package into the ISO (e.g. v0.2, v0.2.10, latest)'
+        description: 'Image tag to package into the ISO (e.g. v0.2, v0.2.12, latest)'
         required: true
         default: 'v0.2'
+      existing_run_id:
+        description: 'Optional: Use existing artifact from this run ID instead of rebuilding from scratch'
+        required: false
+        default: ''
 
 env:
   IMAGE_NAME: "orca"
@@ -34,6 +38,7 @@ jobs:
           echo "IMAGE_NAME=${IMAGE_NAME,,}" >> $GITHUB_ENV
 
       - name: Log in to GHCR
+        if: inputs.existing_run_id == ''
         uses: redhat-actions/podman-login@v1
         with:
           registry: ghcr.io
@@ -41,6 +46,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create bootc-image-builder configuration
+        if: inputs.existing_run_id == ''
         run: |
           mkdir -p output
           cat << 'EOF' > config.toml
@@ -48,43 +54,51 @@ jobs:
           contents = ""
           EOF
 
-      - name: Build bootable ISO installer via bootc-image-builder
+      - name: Obtain ISO Installer
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          FULL_IMAGE="${IMAGE_REGISTRY}/${IMAGE_NAME}:${{ inputs.image_tag }}"
-          echo "Building bootable ISO for: $FULL_IMAGE"
+          mkdir -p output
+          if [ -n "${{ inputs.existing_run_id }}" ]; then
+            echo "📥 Downloading existing ISO artifact from run ${{ inputs.existing_run_id }}..."
+            gh run download "${{ inputs.existing_run_id }}" -n "orca-${{ inputs.image_tag }}-installer" --dir output/
+          else
+            FULL_IMAGE="${IMAGE_REGISTRY}/${IMAGE_NAME}:${{ inputs.image_tag }}"
+            echo "Building bootable ISO for: $FULL_IMAGE"
 
-          echo "Pulling image into local container storage..."
-          sudo podman pull "$FULL_IMAGE"
+            echo "Pulling image into local container storage..."
+            sudo podman pull "$FULL_IMAGE"
 
-          sudo podman run \
-            --rm \
-            --privileged \
-            --pull=newer \
-            --security-opt label=type:unconfined_t \
-            -v /var/lib/containers/storage:/var/lib/containers/storage \
-            -v "$PWD/config.toml:/config.toml:ro" \
-            -v "$PWD/output:/output" \
-            quay.io/centos-bootc/bootc-image-builder:latest \
-            --type anaconda-iso \
-            --rootfs btrfs \
-            --config /config.toml \
-            "$FULL_IMAGE"
-
-
+            sudo podman run \
+              --rm \
+              --privileged \
+              --pull=newer \
+              --security-opt label=type:unconfined_t \
+              -v /var/lib/containers/storage:/var/lib/containers/storage \
+              -v "$PWD/config.toml:/config.toml:ro" \
+              -v "$PWD/output:/output" \
+              quay.io/centos-bootc/bootc-image-builder:latest \
+              --type anaconda-iso \
+              --rootfs btrfs \
+              --config /config.toml \
+              "$FULL_IMAGE"
+          fi
 
       - name: Prepare ISO artifact
         id: prepare-iso
         run: |
-          sudo chown -R $USER:$USER output/
+          sudo chown -R $USER:$USER output/ 2>/dev/null || true
           ISO_SRC=$(find output/ -type f \( -name "*.iso" -o -name "install.iso" -o -name "boot.iso" \) | head -n 1)
           if [ -z "$ISO_SRC" ] || [ ! -f "$ISO_SRC" ]; then
-            echo "❌ Error: No ISO file generated in output directory!"
+            echo "❌ Error: No ISO file found in output directory!"
             ls -laR output/
             exit 1
           fi
 
           TARGET_ISO="orca-${{ inputs.image_tag }}-x86_64.iso"
-          mv -v "$ISO_SRC" "./$TARGET_ISO"
+          if [ "$ISO_SRC" != "./$TARGET_ISO" ]; then
+            mv -v "$ISO_SRC" "./$TARGET_ISO"
+          fi
           sha256sum "./$TARGET_ISO" > "./${TARGET_ISO}-CHECKSUM"
 
           echo "iso_path=./$TARGET_ISO" >> $GITHUB_OUTPUT
@@ -92,6 +106,7 @@ jobs:
           echo "iso_filename=$TARGET_ISO" >> $GITHUB_OUTPUT
 
       - name: Upload ISO Artifact
+        if: inputs.existing_run_id == ''
         uses: actions/upload-artifact@v4
         with:
           name: orca-${{ inputs.image_tag }}-installer
@@ -101,23 +116,93 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      - name: Upload ISO to GitHub Release
+      - name: Upload ISO to S3 Storage
+        id: s3-upload
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET }}
+          S3_HOST: ${{ secrets.S3_HOST }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${AWS_ACCESS_KEY_ID:-}" ] || [ -z "${S3_HOST:-}" ]; then
+            echo "⚠️ S3 secrets (S3_ACCESS_KEY / S3_HOST) not set. Skipping S3 upload."
+            exit 0
+          fi
+
+          TARGET_ISO="${{ steps.prepare-iso.outputs.iso_filename }}"
+          CHECKSUM_FILE="${TARGET_ISO}-CHECKSUM"
+
+          # Normalize S3_HOST
+          S3_RAW="${S3_HOST%/}"
+
+          if [[ "$S3_RAW" =~ ^https?:// ]]; then
+            PROTO="${S3_RAW%%://*}://"
+            HOST_PATH="${S3_RAW#*://}"
+          else
+            PROTO="https://"
+            HOST_PATH="$S3_RAW"
+          fi
+
+          if [[ "$HOST_PATH" == *"/"* ]]; then
+            HOST="${HOST_PATH%%/*}"
+            BUCKET_PATH="${HOST_PATH#*/}"
+          else
+            HOST="$HOST_PATH"
+            BUCKET_PATH=""
+          fi
+
+          ENDPOINT="${PROTO}${HOST}"
+
+          # Extract or default AWS region
+          if [[ "$HOST" =~ s3\.([a-z0-9-]+)\.amazonaws\.com ]]; then
+            export AWS_DEFAULT_REGION="${BASH_REMATCH[1]}"
+          else
+            export AWS_DEFAULT_REGION="us-east-1"
+          fi
+
+          echo "🚀 Uploading $TARGET_ISO to s3://${BUCKET_PATH}/${TARGET_ISO} (Endpoint: $ENDPOINT)..."
+          aws s3 cp "$TARGET_ISO" "s3://${BUCKET_PATH}/${TARGET_ISO}" --endpoint-url "$ENDPOINT"
+
+          echo "🚀 Uploading $CHECKSUM_FILE to s3://${BUCKET_PATH}/${CHECKSUM_FILE} (Endpoint: $ENDPOINT)..."
+          aws s3 cp "$CHECKSUM_FILE" "s3://${BUCKET_PATH}/${CHECKSUM_FILE}" --endpoint-url "$ENDPOINT"
+
+          DOWNLOAD_URL="${PROTO}${HOST_PATH}/${TARGET_ISO}"
+          CHECKSUM_URL="${PROTO}${HOST_PATH}/${CHECKSUM_FILE}"
+          echo "download_url=$DOWNLOAD_URL" >> $GITHUB_OUTPUT
+          echo "checksum_url=$CHECKSUM_URL" >> $GITHUB_OUTPUT
+
+          echo "✅ S3 Upload successful!"
+          echo "Direct ISO URL: $DOWNLOAD_URL"
+
+      - name: Update GitHub Release
         if: startsWith(inputs.image_tag, 'v')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TARGET_ISO="${{ steps.prepare-iso.outputs.iso_path }}"
+          TARGET_ISO="${{ steps.prepare-iso.outputs.iso_filename }}"
           CHECKSUM_ISO="${{ steps.prepare-iso.outputs.checksum_path }}"
+          DOWNLOAD_URL="${{ steps.s3-upload.outputs.download_url }}"
+          CHECKSUM_URL="${{ steps.s3-upload.outputs.checksum_url }}"
 
-          # Always upload the sha256 checksum to the release
+          # Always upload the sha256 checksum file to release assets
           gh release upload "${{ inputs.image_tag }}" "$CHECKSUM_ISO" --clobber || true
 
-          # If the ISO happens to be under 2 GiB, upload it directly to the release
-          ISO_SIZE=$(stat -c%s "$TARGET_ISO" 2>/dev/null || stat -f%z "$TARGET_ISO")
-          if [ "$ISO_SIZE" -lt 2147483648 ]; then
-            gh release upload "${{ inputs.image_tag }}" "$TARGET_ISO" --clobber || true
-          else
-            echo "ℹ️ ISO size ($ISO_SIZE bytes) exceeds GitHub Releases 2 GiB limit; available via GitHub Actions artifacts."
+          # If direct download URL is available, link it in release notes
+          if [ -n "$DOWNLOAD_URL" ]; then
+            echo "Attaching S3 direct download link to release ${{ inputs.image_tag }} notes..."
+            CURRENT_NOTES=$(gh release view "${{ inputs.image_tag }}" --json body -q .body || true)
+            if ! echo "$CURRENT_NOTES" | grep -q "$DOWNLOAD_URL"; then
+              UPDATED_NOTES=$(cat << EOF
+$CURRENT_NOTES
+
+---
+
+### 💿 Direct Installation ISO Download
+* **Bootable ISO:** [$TARGET_ISO]($DOWNLOAD_URL)
+* **SHA256 Checksum:** [${TARGET_ISO}-CHECKSUM]($CHECKSUM_URL)
+EOF
+              )
+              gh release edit "${{ inputs.image_tag }}" --notes "$UPDATED_NOTES" || true
+            fi
           fi
-
-
