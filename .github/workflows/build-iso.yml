@@ -105,23 +105,13 @@ jobs:
           echo "checksum_path=./${TARGET_ISO}-CHECKSUM" >> $GITHUB_OUTPUT
           echo "iso_filename=$TARGET_ISO" >> $GITHUB_OUTPUT
 
-      - name: Upload ISO Artifact
-        if: inputs.existing_run_id == ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: orca-${{ inputs.image_tag }}-installer
-          path: |
-            ${{ steps.prepare-iso.outputs.iso_path }}
-            ${{ steps.prepare-iso.outputs.checksum_path }}
-          if-no-files-found: error
-          retention-days: 14
-
       - name: Upload ISO to S3 Storage
         id: s3-upload
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET }}
           S3_HOST: ${{ secrets.S3_HOST }}
+          S3_REGION: ${{ secrets.S3_REGION }}
         run: |
           set -euo pipefail
 
@@ -155,13 +145,18 @@ jobs:
           ENDPOINT="${PROTO}${HOST}"
 
           # Extract or default AWS region
-          if [[ "$HOST" =~ s3\.([a-z0-9-]+)\.amazonaws\.com ]]; then
+          if [ -n "${S3_REGION:-}" ]; then
+            export AWS_DEFAULT_REGION="$S3_REGION"
+          elif [[ "$HOST" =~ s3\.([a-z0-9-]+)\.amazonaws\.com ]]; then
             export AWS_DEFAULT_REGION="${BASH_REMATCH[1]}"
           else
             export AWS_DEFAULT_REGION="us-east-1"
           fi
 
-          echo "🚀 Uploading $TARGET_ISO to s3://${BUCKET_PATH}/${TARGET_ISO} (Endpoint: $ENDPOINT)..."
+          # Enable path-style addressing for custom S3 endpoints
+          aws configure set default.s3.addressing_style path
+
+          echo "🚀 Uploading $TARGET_ISO to s3://${BUCKET_PATH}/${TARGET_ISO} (Endpoint: $ENDPOINT, Region: $AWS_DEFAULT_REGION, Path-Style: enabled)..."
           aws s3 cp "$TARGET_ISO" "s3://${BUCKET_PATH}/${TARGET_ISO}" --endpoint-url "$ENDPOINT"
 
           echo "🚀 Uploading $CHECKSUM_FILE to s3://${BUCKET_PATH}/${CHECKSUM_FILE} (Endpoint: $ENDPOINT)..."
