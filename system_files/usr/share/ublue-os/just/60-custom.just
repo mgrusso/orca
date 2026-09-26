@@ -21,6 +21,13 @@ orca-lock:
     #!/usr/bin/env bash
     orca-lock
 
+# Update the boot initramfs so the Orca bootsplash theme displays on startup
+orca-bootsplash:
+    #!/usr/bin/env bash
+    echo "Updating bootloader initramfs with Orca bootsplash theme..."
+    sudo plymouth-set-default-theme -R orca
+    echo "✨ Done! The Orca bootsplash is now baked into your bootloader initramfs."
+
 
 
 # Set wallpaper and synchronize Niri focus ring accent color
