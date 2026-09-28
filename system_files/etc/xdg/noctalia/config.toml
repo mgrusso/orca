@@ -25,7 +25,17 @@ background_opacity = 0.93
 radius = 12
 start = ["launcher", "wallpaper", "workspaces"]
 center = ["clock"]
-end = ["media", "power_profile", "network", "battery", "control_center_toggle"]
+end = [
+    "media",
+    "tray",
+    "keyboard-layout",
+    "network",
+    "bluetooth",
+    "volume",
+    "battery",
+    "control-center",
+    "session"
+]
 
 [launcher]
 icon = "distributor-logo-fedora"
