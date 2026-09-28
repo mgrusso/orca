@@ -45,6 +45,20 @@ if [ -f "/etc/skel/.config/niri/config.kdl" ]; then
     cp -f "/etc/skel/.config/niri/config.kdl" "$HOME/.config/niri/config.kdl"
 fi
 
+# Synchronize Niri keyboard layout with the system layout configured in Anaconda / GDM
+SYS_LAYOUT=$(localectl status 2>/dev/null | grep -i "X11 Layout:" | awk '{print $NF}' | cut -d, -f1 || true)
+if [ -z "$SYS_LAYOUT" ]; then
+    SYS_LAYOUT=$(localectl status 2>/dev/null | grep -i "VC Keymap:" | awk '{print $NF}' | cut -d- -f1 || true)
+fi
+if [ -n "$SYS_LAYOUT" ] && [ -f "$HOME/.config/niri/config.kdl" ]; then
+    sed -i -E "s/layout \"[^\"]+\"/layout \"$SYS_LAYOUT\"/g" "$HOME/.config/niri/config.kdl" 2>/dev/null || true
+fi
+
+# Ensure automatic network time synchronization is enabled
+if command -v timedatectl >/dev/null 2>&1; then
+    timedatectl set-ntp true 2>/dev/null || true
+fi
+
 # 4. Seed Ghostty terminal configuration (Catppuccin Mocha, opacity 0.80, blur and cell opacity)
 mkdir -p "$HOME/.config/ghostty"
 if [ -f "/etc/skel/.config/ghostty/config" ]; then

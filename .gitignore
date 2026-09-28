@@ -10,3 +10,7 @@ _build/
 # Local container cache
 .podman/
 .docker/
+
+# Python cache
+__pycache__/
+*.pyc

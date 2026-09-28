@@ -45,7 +45,9 @@ if command -v rpm-ostree >/dev/null 2>&1; then
     
     IS_SAME_CHANNEL=false
     if [ -n "$CURRENT_IMG" ]; then
-        if [[ "$CURRENT_IMG" == *":$TARGET_TAG"* ]] || [[ "$CURRENT_IMG" == *":$CHANNEL"* ]] || [[ "$CURRENT_IMG" == *":v$CHANNEL"* ]]; then
+        if [[ "$CURRENT_IMG" == *":$TARGET_TAG" ]] || [[ "$CURRENT_IMG" == *":$CHANNEL" ]] || \
+           [[ "$CURRENT_IMG" == *":v$CHANNEL" ]] || [[ "$CURRENT_IMG" == *":v${CHANNEL}."* ]] || \
+           [[ "$CURRENT_IMG" == *":${CHANNEL}."* ]]; then
             IS_SAME_CHANNEL=true
         fi
     fi
@@ -70,10 +72,20 @@ if command -v rpm-ostree >/dev/null 2>&1; then
     fi
 elif command -v bootc >/dev/null 2>&1; then
     CURRENT_IMG=$(bootc status 2>/dev/null | grep -E "image:|Image:" | head -n 1 | awk '{print $NF}' || true)
-    if [[ "$CURRENT_IMG" == *":$TARGET_TAG" ]]; then
+    IS_SAME_CHANNEL=false
+    if [ -n "$CURRENT_IMG" ]; then
+        if [[ "$CURRENT_IMG" == *":$TARGET_TAG" ]] || [[ "$CURRENT_IMG" == *":$CHANNEL" ]] || \
+           [[ "$CURRENT_IMG" == *":v$CHANNEL" ]] || [[ "$CURRENT_IMG" == *":v${CHANNEL}."* ]] || \
+           [[ "$CURRENT_IMG" == *":${CHANNEL}."* ]]; then
+            IS_SAME_CHANNEL=true
+        fi
+    fi
+
+    if [ "$IS_SAME_CHANNEL" = true ]; then
+        echo "Currently tracking channel '$TARGET_TAG'. Checking for updates..."
         bootc upgrade || true
     else
-        echo "Switching base image to channel '$TARGET_TAG'..."
+        echo "Switching base image to channel '$TARGET_TAG' ($TARGET_IMAGE)..."
         bootc switch "$TARGET_IMAGE" || true
     fi
 else

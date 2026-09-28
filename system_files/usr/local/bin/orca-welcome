@@ -78,6 +78,68 @@ def launch_or_install_browser(app_id, name):
             subprocess.Popen(["flatpak", "install", "-y", "flathub", app_id])
 
 
+def get_current_keyboard_layout():
+    niri_conf = os.path.expanduser("~/.config/niri/config.kdl")
+    if os.path.exists(niri_conf):
+        try:
+            with open(niri_conf, "r") as f:
+                for line in f:
+                    if 'layout "' in line:
+                        return line.split('layout "')[1].split('"')[0]
+        except Exception:
+            pass
+    try:
+        out = subprocess.check_output(["localectl", "status"], text=True, stderr=subprocess.DEVNULL)
+        for line in out.splitlines():
+            if "X11 Layout:" in line:
+                return line.split(":")[-1].strip().split(",")[0]
+            if "VC Keymap:" in line:
+                return line.split(":")[-1].strip().split("-")[0]
+    except Exception:
+        pass
+    return "de"
+
+
+def set_keyboard_layout(layout_code):
+    niri_conf = os.path.expanduser("~/.config/niri/config.kdl")
+    if os.path.exists(niri_conf):
+        try:
+            with open(niri_conf, "r") as f:
+                content = f.read()
+            import re
+            content = re.sub(r'layout "[^"]+"', f'layout "{layout_code}"', content)
+            with open(niri_conf, "w") as f:
+                f.write(content)
+            subprocess.Popen(["niri", "msg", "action", "reload-config"])
+        except Exception:
+            pass
+
+    try:
+        subprocess.Popen(["localectl", "set-x11-keymap", layout_code])
+    except Exception:
+        pass
+
+
+def get_current_timezone():
+    try:
+        out = subprocess.check_output(
+            ["timedatectl", "show", "--property=Timezone", "--value"],
+            text=True, stderr=subprocess.DEVNULL
+        ).strip()
+        if out:
+            return out
+    except Exception:
+        pass
+    try:
+        if os.path.islink("/etc/localtime"):
+            target = os.readlink("/etc/localtime")
+            if "zoneinfo/" in target:
+                return target.split("zoneinfo/")[-1]
+    except Exception:
+        pass
+    return "Europe/Berlin"
+
+
 class OrcaWelcomeWindow(Adw.ApplicationWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -86,6 +148,7 @@ class OrcaWelcomeWindow(Adw.ApplicationWindow):
 
         self.current_page_idx = 0
         self.browser_buttons = {}
+        self.kb_buttons = {}
 
         # Main Layout
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
@@ -118,7 +181,7 @@ class OrcaWelcomeWindow(Adw.ApplicationWindow):
         self.btn_prev.set_sensitive(False)
         bottom_box.append(self.btn_prev)
 
-        self.step_label = Gtk.Label(label="Step 1 of 5")
+        self.step_label = Gtk.Label(label="Step 1 of 6")
         self.step_label.set_hexpand(True)
         self.step_label.add_css_class("dim-label")
         bottom_box.append(self.step_label)
@@ -131,9 +194,10 @@ class OrcaWelcomeWindow(Adw.ApplicationWindow):
         main_box.append(bottom_box)
 
         # Build each wizard step
-        self.page_names = ["welcome", "theme", "browser", "shortcuts", "finish"]
+        self.page_names = ["welcome", "region", "theme", "browser", "shortcuts", "finish"]
         self.page_titles = [
             "Welcome to Orca OS",
+            "Keyboard & Region",
             "Appearance & Accent",
             "Web Browsers",
             "Shortcuts & Gestures",
@@ -141,6 +205,7 @@ class OrcaWelcomeWindow(Adw.ApplicationWindow):
         ]
 
         self.build_page_welcome()
+        self.build_page_region()
         self.build_page_theme()
         self.build_page_browser()
         self.build_page_shortcuts()
@@ -258,6 +323,88 @@ class OrcaWelcomeWindow(Adw.ApplicationWindow):
         status.set_child(cards_box)
         wrapped = self.wrap_page(status, max_width=760)
         self.stack.add_named(wrapped, "welcome")
+
+    def on_keyboard_selected(self, code):
+        set_keyboard_layout(code)
+        for c, btn in self.kb_buttons.items():
+            if c == code:
+                btn.set_label("Active")
+                btn.add_css_class("suggested-action")
+            else:
+                btn.set_label("Select")
+                btn.remove_css_class("suggested-action")
+
+    def build_page_region(self):
+        pref_page = Adw.PreferencesPage()
+        pref_page.set_title("Region & Input")
+        pref_page.set_description("Configure your keyboard layout and system timezone.")
+
+        # Group 1: Keyboard Layout
+        grp_kb = Adw.PreferencesGroup()
+        grp_kb.set_title("Keyboard Layout")
+        grp_kb.set_description("Select your layout. Changes apply immediately to Niri and the login screen.")
+
+        current_layout = get_current_keyboard_layout()
+
+        layouts = [
+            ("de", "🇩🇪 German", "Standard German QWERTZ layout"),
+            ("us", "🇺🇸 English (US)", "Standard American QWERTY layout"),
+            ("ch", "🇨🇭 Swiss German", "Swiss QWERTZ multilingual layout"),
+            ("gb", "🇬🇧 English (UK)", "British English layout with £ key"),
+        ]
+
+        self.kb_buttons = {}
+        for code, name, desc in layouts:
+            row = Adw.ActionRow()
+            row.set_title(name)
+            row.set_subtitle(desc)
+
+            btn = Gtk.Button()
+            btn.set_valign(Gtk.Align.CENTER)
+            if code == current_layout:
+                btn.set_label("Active")
+                btn.add_css_class("suggested-action")
+            else:
+                btn.set_label("Select")
+
+            btn.connect("clicked", lambda b, c=code: self.on_keyboard_selected(c))
+            row.add_suffix(btn)
+            grp_kb.add(row)
+            self.kb_buttons[code] = btn
+
+        # Interactive test entry row
+        entry_row = Adw.ActionRow()
+        entry_row.set_title("Test Layout")
+        entry_row.set_subtitle("Type characters here to test your keys (e.g. z, y, @, ä, /, -):")
+        test_entry = Gtk.Entry()
+        test_entry.set_placeholder_text("Type here to test...")
+        test_entry.set_hexpand(True)
+        test_entry.set_valign(Gtk.Align.CENTER)
+        entry_row.add_suffix(test_entry)
+        grp_kb.add(entry_row)
+
+        pref_page.add(grp_kb)
+
+        # Group 2: Timezone & Network Time
+        grp_tz = Adw.PreferencesGroup()
+        grp_tz.set_title("Date & Time")
+        grp_tz.set_description("Manage your timezone and network time synchronization.")
+
+        current_tz = get_current_timezone()
+        row_tz = Adw.ActionRow()
+        row_tz.set_title("System Timezone")
+        row_tz.set_subtitle(f"Currently set to: {current_tz}")
+
+        btn_tz = Gtk.Button(label="Open Time Settings")
+        btn_tz.set_valign(Gtk.Align.CENTER)
+        btn_tz.connect("clicked", lambda b: subprocess.Popen(["gnome-control-center", "datetime"]))
+        row_tz.add_suffix(btn_tz)
+        grp_tz.add(row_tz)
+
+        pref_page.add(grp_tz)
+
+        wrapped = self.wrap_page(pref_page)
+        self.stack.add_named(wrapped, "region")
 
     def build_page_theme(self):
         pref_page = Adw.PreferencesPage()

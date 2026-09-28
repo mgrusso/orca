@@ -50,8 +50,19 @@ jobs:
         run: |
           mkdir -p output
           cat << 'EOF' > config.toml
+          [customizations.installer.modules]
+          enable = [
+            "org.fedoraproject.Anaconda.Modules.Localization",
+            "org.fedoraproject.Anaconda.Modules.Timezone",
+            "org.fedoraproject.Anaconda.Modules.Users"
+          ]
+
           [customizations.installer.kickstart]
-          contents = ""
+          contents = """
+          lang en_US.UTF-8
+          keyboard --vckeymap=de --xlayouts='de','us'
+          timezone Europe/Berlin --utc
+          """
           EOF
 
       - name: Obtain ISO Installer
