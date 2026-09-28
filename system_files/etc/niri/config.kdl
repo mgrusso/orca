@@ -45,7 +45,7 @@ debug {
 input {
     keyboard {
         xkb {
-            layout "de"
+            layout "us"
         }
     }
     touchpad {

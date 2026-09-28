@@ -60,8 +60,8 @@ jobs:
           [customizations.installer.kickstart]
           contents = """
           lang en_US.UTF-8
-          keyboard --vckeymap=de --xlayouts='de','us'
-          timezone Europe/Berlin --utc
+          keyboard --vckeymap=us --xlayouts='us'
+          timezone UTC --utc
           """
           EOF
 
