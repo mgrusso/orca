@@ -24,6 +24,7 @@ jobs:
       contents: read
       packages: write
       id-token: write
+      actions: write
 
     steps:
       - name: Checkout code
@@ -84,3 +85,13 @@ jobs:
           image: ${{ steps.build-image.outputs.image }}
           tags: ${{ steps.build-image.outputs.tags }}
           registry: ${{ env.IMAGE_REGISTRY }}
+
+      - name: Trigger ISO Build for Release Tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/}"
+          echo "🚀 Image pushed! Triggering ISO build workflow for release tag: $VERSION..."
+          gh workflow run build-iso.yml -f image_tag="$VERSION"
+
