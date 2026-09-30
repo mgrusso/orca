@@ -57,6 +57,9 @@ jobs:
             "org.fedoraproject.Anaconda.Modules.Users"
           ]
 
+          [customizations.kernel]
+          append = "rhgb quiet"
+
           [customizations.installer.kickstart]
           contents = """
           lang en_US.UTF-8

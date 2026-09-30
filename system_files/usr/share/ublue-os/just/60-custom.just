@@ -24,9 +24,10 @@ orca-lock:
 # Update the boot initramfs so the Orca bootsplash theme displays on startup
 orca-bootsplash:
     #!/usr/bin/env bash
-    echo "Updating bootloader initramfs with Orca bootsplash theme..."
-    sudo plymouth-set-default-theme -R orca
-    echo "✨ Done! The Orca bootsplash is now baked into your bootloader initramfs."
+    echo "Configuring Orca bootsplash kernel arguments and initramfs..."
+    rpm-ostree kargs --append-if-missing="rhgb" --append-if-missing="quiet"
+    rpm-ostree initramfs --enable
+    echo "✨ Done! Reboot your system to see the Orca bootsplash at startup."
 
 
 

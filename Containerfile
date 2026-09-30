@@ -78,9 +78,16 @@ RUN rm -rf /etc/motd.d/* /etc/issue.d/* 2>/dev/null || true && \
     if [ -f /usr/bin/umotd ]; then printf '#!/bin/sh\nexit 0\n' > /usr/bin/umotd && chmod +x /usr/bin/umotd; fi && \
     if [ -f /usr/libexec/user-motd ]; then printf '#!/bin/sh\nexit 0\n' > /usr/libexec/user-motd && chmod +x /usr/libexec/user-motd; fi
 
-# Configure Orca Plymouth boot splash theme
+# Configure Orca Plymouth boot splash theme and bake it into bootc initramfs
 RUN cp -rn /usr/share/plymouth/themes/spinner/* /usr/share/plymouth/themes/orca/ 2>/dev/null || true && \
-    (plymouth-set-default-theme -R orca || plymouth-set-default-theme orca) || true
+    plymouth-set-default-theme orca && \
+    for kdir in /usr/lib/modules/*; do \
+        if [ -d "$kdir" ] && [ -f "$kdir/vmlinuz" ]; then \
+            kver=$(basename "$kdir"); \
+            echo "Baking Orca bootsplash into initramfs for kernel $kver..."; \
+            dracut --force --reproducible "$kdir/initramfs.img" "$kver"; \
+        fi \
+    done
 
 # Make /etc/orca configuration directory writable so release channels can be managed without sudo
 RUN mkdir -p /etc/orca && chmod 777 /etc/orca && ( [ -f /etc/orca/release-channel ] && chmod 666 /etc/orca/release-channel || true )
