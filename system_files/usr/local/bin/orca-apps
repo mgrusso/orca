@@ -10,6 +10,7 @@ declare -A BUNDLES=(
     ["social"]="dev.vencord.Vesktop com.spotify.Client md.obsidian.Obsidian org.telegram.desktop"
     ["office"]="org.libreoffice.LibreOffice com.github.xournalpp.xournalpp"
     ["creative"]="org.gimp.GIMP org.inkscape.Inkscape com.obsproject.Studio"
+    ["gaming"]="com.valvesoftware.Steam com.heroicgameslauncher.hgl com.github.Matoking.protontricks org.freedesktop.Platform.VulkanLayer.MangoHud"
 )
 
 declare -A BUNDLE_DESCS=(
@@ -17,6 +18,7 @@ declare -A BUNDLE_DESCS=(
     ["social"]="Communication & Notes (Vesktop/Discord, Spotify, Obsidian, Telegram)"
     ["office"]="Office & Productivity (LibreOffice suite, Xournal++ PDF annotator)"
     ["creative"]="Creative & Media (GIMP image editor, Inkscape vector, OBS Studio)"
+    ["gaming"]="Gaming Stack (Steam, Heroic Games Launcher, Protontricks, MangoHud)"
 )
 
 install_bundle() {
@@ -38,27 +40,29 @@ if [ -z "$BUNDLE" ]; then
     echo "  2) social   - ${BUNDLE_DESCS['social']}"
     echo "  3) office   - ${BUNDLE_DESCS['office']}"
     echo "  4) creative - ${BUNDLE_DESCS['creative']}"
-    echo "  5) all      - Install all curated bundles"
+    echo "  5) gaming   - ${BUNDLE_DESCS['gaming']}"
+    echo "  6) all      - Install all curated bundles"
     echo ""
-    read -p "Choose bundle [1-5 or dev/social/office/creative/all]: " CHOICE
+    read -p "Choose bundle [1-6 or dev/social/office/creative/gaming/all]: " CHOICE
 
     case "$CHOICE" in
         1|dev) BUNDLE="dev" ;;
         2|social) BUNDLE="social" ;;
         3|office) BUNDLE="office" ;;
         4|creative) BUNDLE="creative" ;;
-        5|all) BUNDLE="all" ;;
+        5|gaming) BUNDLE="gaming" ;;
+        6|all) BUNDLE="all" ;;
         *) echo "Invalid choice. Aborted."; exit 0 ;;
     esac
 fi
 
 if [ "$BUNDLE" = "all" ]; then
-    for b in dev social office creative; do
+    for b in dev social office creative gaming; do
         install_bundle "$b"
     done
 elif [[ -v BUNDLES["$BUNDLE"] ]]; then
     install_bundle "$BUNDLE"
 else
-    echo "❌ Unknown bundle '$BUNDLE'. Available: dev, social, office, creative, all"
+    echo "❌ Unknown bundle '$BUNDLE'. Available: dev, social, office, creative, gaming, all"
     exit 1
 fi

@@ -61,10 +61,19 @@ orca-dev-box profile="":
     #!/usr/bin/env bash
     orca-dev-box "{{profile}}"
 
-# Install curated Flatpak application bundles ('dev', 'social', 'office', 'creative', 'all')
+# Install curated Flatpak application bundles ('dev', 'social', 'office', 'creative', 'gaming', 'all')
 orca-apps bundle="":
     #!/usr/bin/env bash
     orca-apps "{{bundle}}"
+
+# Install the complete Linux gaming stack (Steam, Heroic, Protontricks, MangoHud)
+orca-gaming:
+    #!/usr/bin/env bash
+    orca-apps "gaming"
+
+install-gaming:
+    #!/usr/bin/env bash
+    orca-apps "gaming"
 
 # Configure battery charge limit for longevity on laptops (e.g. 80)
 orca-battery-limit threshold="":

@@ -5,7 +5,7 @@ set -euo pipefail
 
 CONFIG_DIR="/etc/orca"
 CONFIG_FILE="${CONFIG_DIR}/release-channel"
-DEFAULT_CHANNEL="0.2"
+DEFAULT_CHANNEL="0.3"
 
 # Ensure config directory exists
 if [ ! -d "$CONFIG_DIR" ]; then
@@ -30,11 +30,13 @@ if [ -z "$TARGET_INPUT" ]; then
     echo "Currently configured channel: [ $CURRENT_CHANNEL ]"
     echo ""
     echo "Available channels:"
-    echo "  • 0.2     (or v0.2)   -> Current release line (default, recommended)"
-    echo "  • 0.1     (or v0.1)   -> Maintenance release line: latest v0.1.x"
+    echo "  • 0.3     (or v0.3)   -> Next release line (recommended)"
+    echo "  • 0.2     (or v0.2)   -> Previous stable line (v0.2.x)"
+    echo "  • 0.3-nvidia          -> Release 0.3 with proprietary Nvidia drivers"
     echo "  • latest              -> Bleeding Edge (daily development build from main)"
+    echo "  • latest-nvidia       -> Bleeding Edge with proprietary Nvidia drivers"
     echo ""
-    read -p "Select release channel [0.2/0.1/latest]: " TARGET_INPUT
+    read -p "Select release channel [0.3/0.2/0.3-nvidia/latest/latest-nvidia]: " TARGET_INPUT
 fi
 
 if [ -z "$TARGET_INPUT" ]; then
@@ -44,14 +46,26 @@ fi
 
 # Normalize channel
 case "$TARGET_INPUT" in
+    0.3|v0.3)
+        CLEAN_CHANNEL="0.3"
+        ;;
+    0.3-nvidia|v0.3-nvidia)
+        CLEAN_CHANNEL="0.3-nvidia"
+        ;;
     0.2|v0.2)
         CLEAN_CHANNEL="0.2"
+        ;;
+    0.2-nvidia|v0.2-nvidia)
+        CLEAN_CHANNEL="0.2-nvidia"
         ;;
     0.1|v0.1)
         CLEAN_CHANNEL="0.1"
         ;;
     latest|dev|edge)
         CLEAN_CHANNEL="latest"
+        ;;
+    latest-nvidia|dev-nvidia|edge-nvidia)
+        CLEAN_CHANNEL="latest-nvidia"
         ;;
     *)
         CLEAN_CHANNEL="$TARGET_INPUT"

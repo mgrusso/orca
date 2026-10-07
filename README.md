@@ -72,8 +72,9 @@ Orca ships with dedicated CLI commands for hassle-free maintenance:
 • ujust orca-pin             - Pin/protect deployment from updates
 • ujust orca-theme           - Switch between Catppuccin Mocha & Latte
 • ujust orca-wallpaper-sync  - Sync wallpaper & Niri focus ring color
-• ujust orca-release-channel - Switch release channel (0.2, 0.1, latest)
-• ujust orca-apps            - Install curated Flatpak bundles (dev, social, office)
+• ujust orca-release-channel - Switch release channel (0.3, 0.2, latest, *-nvidia)
+• ujust orca-apps            - Install curated Flatpak bundles (dev, social, office, gaming)
+• ujust orca-gaming          - Install complete Linux gaming stack (Steam, Heroic, MangoHud)
 • ujust orca-dev-box         - Launch isolated Distrobox dev container (elixir, fedora, arch, rust)
 • ujust orca-battery-limit   - Set laptop battery charge limit (e.g. 80%)
 • ujust orca-nightlight      - Toggle Wayland night light / blue light filter
@@ -93,9 +94,11 @@ Orca uses release channels to balance rock-solid stability with rapid feature de
 
 | Channel | Image Tag | Purpose |
 | :--- | :--- | :--- |
-| **`0.2`** (Default) | `ghcr.io/mgrusso/orca:v0.2` | Current stable release branch. Receives tested point releases. |
-| **`0.1`** | `ghcr.io/mgrusso/orca:v0.1` | Previous stable maintenance line. |
+| **`0.3`** (Default) | `ghcr.io/mgrusso/orca:v0.3` | Current stable release branch. Receives tested point releases. |
+| **`0.3-nvidia`** | `ghcr.io/mgrusso/orca:v0.3-nvidia` | Stable release with pre-installed proprietary Nvidia drivers. |
+| **`0.2`** | `ghcr.io/mgrusso/orca:v0.2` | Previous maintenance line. |
 | **`latest`** | `ghcr.io/mgrusso/orca:latest` | Bleeding edge development built automatically on every push to `main`. |
+| **`latest-nvidia`** | `ghcr.io/mgrusso/orca:latest-nvidia` | Bleeding edge development with Nvidia drivers. |
 
 To inspect or switch your release channel:
 ```bash

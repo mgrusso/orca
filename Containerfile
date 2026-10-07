@@ -1,4 +1,5 @@
-FROM ghcr.io/ublue-os/bluefin:stable
+ARG BASE_IMAGE="ghcr.io/ublue-os/bluefin:stable"
+FROM ${BASE_IMAGE}
 
 LABEL org.opencontainers.image.title="Orca" \
       org.opencontainers.image.description="Bluefin customized with Niri, Noctalia Shell and Ghostty" \
