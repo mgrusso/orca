@@ -25,19 +25,6 @@ jobs:
       packages: write
       id-token: write
       actions: write
-    strategy:
-      fail-fast: false
-      matrix:
-        flavor: [standard, nvidia]
-        include:
-          - flavor: standard
-            base_image: "ghcr.io/ublue-os/bluefin:stable"
-            image_name_suffix: ""
-            tag_suffix: ""
-          - flavor: nvidia
-            base_image: "ghcr.io/ublue-os/bluefin-nvidia:stable"
-            image_name_suffix: ""
-            tag_suffix: "-nvidia"
 
     steps:
       - name: Checkout code
@@ -55,23 +42,22 @@ jobs:
       - name: Determine image tags
         id: tags
         run: |
-          SUFFIX="${{ matrix.tag_suffix }}"
           if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
             VERSION="${GITHUB_REF#refs/tags/}"
             CLEAN_VERSION="${VERSION#v}"
             MAJOR_MINOR=$(echo "$CLEAN_VERSION" | cut -d. -f1,2)
             {
               echo "tags<<EOF"
-              echo "${VERSION}${SUFFIX}"
-              echo "${CLEAN_VERSION}${SUFFIX}"
-              echo "v${MAJOR_MINOR}${SUFFIX}"
-              echo "${MAJOR_MINOR}${SUFFIX}"
+              echo "${VERSION}"
+              echo "${CLEAN_VERSION}"
+              echo "v${MAJOR_MINOR}"
+              echo "${MAJOR_MINOR}"
               echo "EOF"
             } >> $GITHUB_OUTPUT
           else
             {
               echo "tags<<EOF"
-              echo "latest${SUFFIX}"
+              echo "latest"
               echo "EOF"
             } >> $GITHUB_OUTPUT
           fi
@@ -82,8 +68,6 @@ jobs:
         with:
           image: ${{ env.IMAGE_NAME }}
           tags: ${{ steps.tags.outputs.tags }}
-          build-args: |
-            BASE_IMAGE=${{ matrix.base_image }}
           containerfiles: |
             ./Containerfile
           oci: true
@@ -102,12 +86,12 @@ jobs:
           tags: ${{ steps.build-image.outputs.tags }}
           registry: ${{ env.IMAGE_REGISTRY }}
 
-      - name: Trigger ISO Build for Release Tag (Standard)
-        if: startsWith(github.ref, 'refs/tags/v') && matrix.flavor == 'standard'
+      - name: Trigger ISO Build for Release Tag
+        if: startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="${GITHUB_REF#refs/tags/}"
-          echo "🚀 Standard image pushed! Triggering ISO build workflow for release tag: $VERSION..."
+          echo "🚀 Image pushed! Triggering ISO build workflow for release tag: $VERSION..."
           gh workflow run build-iso.yml -f image_tag="$VERSION"
 

@@ -16,23 +16,14 @@ case "$CHANNEL" in
     latest|dev|edge)
         TARGET_TAG="latest"
         ;;
-    latest-nvidia|dev-nvidia|edge-nvidia)
-        TARGET_TAG="latest-nvidia"
-        ;;
     0.1|v0.1)
         TARGET_TAG="v0.1"
         ;;
     0.2|v0.2)
         TARGET_TAG="v0.2"
         ;;
-    0.2-nvidia|v0.2-nvidia)
-        TARGET_TAG="v0.2-nvidia"
-        ;;
     0.3|v0.3)
         TARGET_TAG="v0.3"
-        ;;
-    0.3-nvidia|v0.3-nvidia)
-        TARGET_TAG="v0.3-nvidia"
         ;;
     *)
         TARGET_TAG="$CHANNEL"
