@@ -95,6 +95,8 @@ Orca uses release channels to balance rock-solid stability with rapid feature de
 | Channel | Image Tag | Purpose |
 | :--- | :--- | :--- |
 | **`0.3`** (Default) | `ghcr.io/mgrusso/orca:v0.3` | Current stable release branch. Receives tested point releases. |
+| **`0.3-rc`** | `ghcr.io/mgrusso/orca:v0.3-rc` | Release Candidate builds for testing upcoming point releases. |
+| **`0.3-beta`** | `ghcr.io/mgrusso/orca:v0.3-beta` | Beta prerelease builds. |
 | **`0.2`** | `ghcr.io/mgrusso/orca:v0.2` | Previous maintenance line. |
 | **`latest`** | `ghcr.io/mgrusso/orca:latest` | Bleeding edge development built automatically on every push to `main`. |
 

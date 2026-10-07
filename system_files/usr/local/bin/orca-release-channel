@@ -29,11 +29,16 @@ if [ -z "$TARGET_INPUT" ]; then
     echo "==========================================="
     echo "Currently configured channel: [ $CURRENT_CHANNEL ]"
     echo ""
-    echo "  • 0.3     (or v0.3)   -> Current release line (default, recommended)"
+    echo "Stable Channels:"
+    echo "  • 0.3     (or v0.3)   -> Current stable line (v0.3.x)"
     echo "  • 0.2     (or v0.2)   -> Previous maintenance line (v0.2.x)"
-    echo "  • latest              -> Bleeding Edge (daily development build from main)"
     echo ""
-    read -p "Select release channel [0.3/0.2/latest]: " TARGET_INPUT
+    echo "Testing & Prerelease Channels:"
+    echo "  • 0.3-rc              -> Release candidates for 0.3 (e.g. v0.3.0-rc1)"
+    echo "  • 0.3-beta            -> Beta releases for 0.3"
+    echo "  • latest              -> Bleeding edge (nightly/continuous from main)"
+    echo ""
+    read -p "Select release channel [0.3/0.3-rc/0.3-beta/0.2/latest]: " TARGET_INPUT
 fi
 
 if [ -z "$TARGET_INPUT" ]; then
@@ -46,8 +51,17 @@ case "$TARGET_INPUT" in
     0.3|v0.3)
         CLEAN_CHANNEL="0.3"
         ;;
+    0.3-rc|v0.3-rc)
+        CLEAN_CHANNEL="0.3-rc"
+        ;;
+    0.3-beta|v0.3-beta)
+        CLEAN_CHANNEL="0.3-beta"
+        ;;
     0.2|v0.2)
         CLEAN_CHANNEL="0.2"
+        ;;
+    0.2-rc|v0.2-rc)
+        CLEAN_CHANNEL="0.2-rc"
         ;;
     0.1|v0.1)
         CLEAN_CHANNEL="0.1"
