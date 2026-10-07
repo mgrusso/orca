@@ -73,9 +73,13 @@ Orca ships with dedicated CLI commands for hassle-free maintenance:
 • ujust orca-theme           - Switch between Catppuccin Mocha & Latte
 • ujust orca-wallpaper-sync  - Sync wallpaper & Niri focus ring color
 • ujust orca-release-channel - Switch release channel (0.2, 0.1, latest)
+• ujust orca-apps            - Install curated Flatpak bundles (dev, social, office)
+• ujust orca-dev-box         - Launch isolated Distrobox dev container (elixir, fedora, arch, rust)
+• ujust orca-battery-limit   - Set laptop battery charge limit (e.g. 80%)
+• ujust orca-nightlight      - Toggle Wayland night light / blue light filter
 • ujust orca-clean           - Reset desktop settings to factory defaults
-• ujust orca-dev-box         - Launch isolated Distrobox dev container
 • Super + Space              - Noctalia Application Launcher
+• Super + V                  - Wayland Clipboard Manager (cliphist)
 • Super + ?                  - Show keyboard shortcuts cheatsheet
 • orca-info / fastfetch      - System status & hardware details
 ──────────────────────────────────────────────────────────
@@ -113,7 +117,9 @@ ujust orca-update
 | :--- | :--- |
 | `Super + Space` or `Super + D` | **Noctalia Application Launcher** |
 | `Super + Return` or `Super + T` | **Ghostty Terminal** |
-| `Super + B` | **Launch Default Web Browser** (configured via `orca-welcome`) |
+| `Super + B` | **Launch Default Web Browser** (Zen, Firefox, Brave, Vivaldi) |
+| `Super + V` | **Clipboard History Manager** (cliphist + fuzzel) |
+| `Super + Shift + N` | **Toggle Night Light / Blue Light Filter** (wlsunset) |
 | `Super + C` / `Super + N` | **Noctalia Control Center & Notifications** |
 | `Super + Shift + W` | **Shuffle Wallpaper & Harmonize Niri Accent Ring** |
 | `Super + Left / Right` | **Scroll across tiling columns** (or trackpad gesture) |

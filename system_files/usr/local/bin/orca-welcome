@@ -114,6 +114,18 @@ def set_keyboard_layout(layout_code):
         except Exception:
             pass
 
+    hypr_conf = os.path.expanduser("~/.config/hypr/hyprland.conf")
+    if os.path.exists(hypr_conf):
+        try:
+            with open(hypr_conf, "r") as f:
+                content = f.read()
+            import re
+            content = re.sub(r'kb_layout = [a-zA-Z_-]+', f'kb_layout = {layout_code}', content)
+            with open(hypr_conf, "w") as f:
+                f.write(content)
+        except Exception:
+            pass
+
     try:
         subprocess.Popen(["localectl", "set-x11-keymap", layout_code])
     except Exception:
@@ -462,14 +474,15 @@ class OrcaWelcomeWindow(Adw.ApplicationWindow):
         grp.set_description("Choose your preferred browser. Super + B will immediately launch your selected default.")
 
         browsers = [
-            ("firefox", "Mozilla Firefox", "org.mozilla.firefox.desktop", "Pre-installed Flatpak configured with Orca dark mode.", True),
-            ("brave", "Brave Browser", "com.brave.Browser.desktop", "Privacy-focused Chromium with built-in ad blocking.", False),
-            ("vivaldi", "Vivaldi Browser", "com.vivaldi.Vivaldi.desktop", "Power-user browser with tab stacks and split-view.", False),
+            ("firefox", "Mozilla Firefox", "org.mozilla.firefox.desktop", "org.mozilla.firefox", "Pre-installed Flatpak configured with Orca dark mode.", True),
+            ("zen", "Zen Browser", "io.github.zen_browser.zen.desktop", "io.github.zen_browser.zen", "Modern Firefox fork with vertical tabs, workspaces, and sleek styling.", False),
+            ("brave", "Brave Browser", "com.brave.Browser.desktop", "com.brave.Browser", "Privacy-focused Chromium with built-in ad blocking.", False),
+            ("vivaldi", "Vivaldi Browser", "com.vivaldi.Vivaldi.desktop", "com.vivaldi.Vivaldi", "Power-user browser with tab stacks and split-view.", False),
         ]
 
         current_def = get_current_default_browser()
 
-        for b_id, b_name, b_desktop, b_desc, is_preinstalled in browsers:
+        for b_id, b_name, b_desktop, app_ref, b_desc, is_preinstalled in browsers:
             row = Adw.ActionRow()
             row.set_title(b_name)
             row.set_subtitle(b_desc)
@@ -486,16 +499,14 @@ class OrcaWelcomeWindow(Adw.ApplicationWindow):
             btn_box.append(btn_default)
 
             # Launch or Install action button
-            if is_preinstalled or is_flatpak_installed(f"com.{b_id}.{b_name.split()[0]}"):
+            if is_preinstalled or is_flatpak_installed(app_ref):
                 btn_launch = Gtk.Button(label="Launch")
                 if is_preinstalled:
                     btn_launch.connect("clicked", lambda b: subprocess.Popen(["firefox"]))
                 else:
-                    app_ref = "com.brave.Browser" if b_id == "brave" else "com.vivaldi.Vivaldi"
                     btn_launch.connect("clicked", lambda b, ref=app_ref: subprocess.Popen(["flatpak", "run", ref]))
                 btn_box.append(btn_launch)
             else:
-                app_ref = "com.brave.Browser" if b_id == "brave" else "com.vivaldi.Vivaldi"
                 btn_install = Gtk.Button(label="Install")
                 btn_install.connect("clicked", lambda b, ref=app_ref, n=b_name: launch_or_install_browser(ref, n))
                 btn_box.append(btn_install)

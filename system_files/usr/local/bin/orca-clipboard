@@ -1,0 +1,42 @@
+#!/bin/bash
+set -euo pipefail
+
+# Orca OS - Clipboard History Selector (cliphist + fuzzel/wl-copy)
+
+if ! command -v cliphist >/dev/null 2>&1; then
+    echo "❌ Error: cliphist is not installed."
+    exit 1
+fi
+
+# Catppuccin Mocha colors for fuzzel dmenu
+FUZZEL_ARGS=(
+    --dmenu
+    --prompt "📋 Clipboard: "
+    --width 50
+    --lines 12
+    --font "Inter:size=11"
+    --background "1e1e2eff"
+    --text "cdd6f4ff"
+    --match-color "cba6f7ff"
+    --selection "313244ff"
+    --selection-text "cdd6f4ff"
+    --border-color "cba6f7ff"
+    --border-width 2
+    --corner-radius 12
+)
+
+SELECTION=""
+if command -v fuzzel >/dev/null 2>&1; then
+    SELECTION=$(cliphist list | fuzzel "${FUZZEL_ARGS[@]}" || true)
+elif command -v rofi >/dev/null 2>&1; then
+    SELECTION=$(cliphist list | rofi -dmenu -p "Clipboard" || true)
+elif command -v wofi >/dev/null 2>&1; then
+    SELECTION=$(cliphist list | wofi --dmenu -p "Clipboard" || true)
+fi
+
+if [ -n "$SELECTION" ]; then
+    echo "$SELECTION" | cliphist decode | wl-copy
+    if command -v notify-send >/dev/null 2>&1; then
+        notify-send "Orca Clipboard" "Copied to clipboard." -i edit-copy -t 1500
+    fi
+fi

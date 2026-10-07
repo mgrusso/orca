@@ -28,10 +28,22 @@ if test -d /var/lib/flatpak/exports/bin
     end
 end
 
-# 4. Interactive Terminal Welcome Banner (Fastfetch)
+# 4. GNOME Keyring SSH agent socket
+if not set -q SSH_AUTH_SOCK; and set -q XDG_RUNTIME_DIR
+    if test -S $XDG_RUNTIME_DIR/keyring/ssh
+        set -gx SSH_AUTH_SOCK $XDG_RUNTIME_DIR/keyring/ssh
+    end
+end
+
+# 5. Interactive Terminal Welcome Banner (Fastfetch)
 if status is-interactive
     if not set -q ORCA_FETCH_SHOWN; and command -v fastfetch >/dev/null 2>&1
         set -gx ORCA_FETCH_SHOWN 1
         fastfetch
+    end
+
+    # 6. Starship Prompt Integration
+    if command -v starship >/dev/null 2>&1
+        starship init fish | source
     end
 end

@@ -1,0 +1,82 @@
+#!/bin/bash
+set -euo pipefail
+
+# Orca OS - Battery Charge Threshold / Battery Health Helper
+
+THRESHOLD="${1:-}"
+
+find_threshold_files() {
+    local files=()
+    for f in /sys/class/power_supply/BAT*/charge_control_end_threshold; do
+        [ -f "$f" ] && files+=("$f")
+    done
+    echo "${files[@]}"
+}
+
+FILES=($(find_threshold_files))
+
+if [ ${#FILES[@]} -eq 0 ]; then
+    echo "⚠️  No compatible battery charge threshold interfaces found on this system."
+    echo "   (Common on desktops, VMs, or laptops lacking driver support for charge limits)."
+    exit 0
+fi
+
+if [ -z "$THRESHOLD" ]; then
+    echo "🐋 Orca OS — Battery Health / Charge Limit"
+    echo "==========================================="
+    for f in "${FILES[@]}"; do
+        bat=$(basename "$(dirname "$f")")
+        current=$(cat "$f" 2>/dev/null || echo "unknown")
+        echo "Battery [$bat] Current limit: ${current}%"
+    done
+    echo ""
+    read -p "Enter desired battery charge limit (e.g. 80 for battery longevity, 100 for full charge) [80]: " THRESHOLD
+    THRESHOLD="${THRESHOLD:-80}"
+fi
+
+if ! [[ "$THRESHOLD" =~ ^[0-9]+$ ]] || [ "$THRESHOLD" -lt 40 ] || [ "$THRESHOLD" -gt 100 ]; then
+    echo "❌ Error: Limit must be an integer between 40 and 100."
+    exit 1
+fi
+
+echo "Setting battery charge limit to ${THRESHOLD}%..."
+SUCCESS=false
+
+for f in "${FILES[@]}"; do
+    if [ -w "$f" ] || [ "$EUID" -eq 0 ]; then
+        echo "$THRESHOLD" > "$f" 2>/dev/null && SUCCESS=true || true
+    else
+        echo "$THRESHOLD" | sudo tee "$f" >/dev/null 2>&1 && SUCCESS=true || true
+    fi
+done
+
+# Persist setting across reboots via systemd service
+SERVICE_FILE="/etc/systemd/system/orca-battery-limit.service"
+PERSIST_CMD="cat << 'EOF' > $SERVICE_FILE
+[Unit]
+Description=Orca OS Battery Charge Limit Persister
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'for f in /sys/class/power_supply/BAT*/charge_control_end_threshold; do [ -f \"\$\$f\" ] && echo $THRESHOLD > \"\$\$f\"; done'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl daemon-reload
+systemctl enable orca-battery-limit.service
+"
+
+if [ "$EUID" -eq 0 ]; then
+    bash -c "$PERSIST_CMD" 2>/dev/null || true
+else
+    sudo bash -c "$PERSIST_CMD" 2>/dev/null || true
+fi
+
+if [ "$SUCCESS" = true ]; then
+    echo "✨ Battery limit successfully set and persisted to ${THRESHOLD}%!"
+else
+    echo "⚠️  Command executed, but check if driver permits write access."
+fi

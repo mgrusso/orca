@@ -1,0 +1,62 @@
+# Orca OS - Catppuccin Mocha Starship Configuration
+add_newline = false
+
+format = """$os$directory$git_branch$git_status$package$elixir$rust$golang$nodejs$python$cmd_duration$line_break$character"""
+
+[character]
+success_symbol = "[➜](bold #a6e3a1) "
+error_symbol = "[➜](bold #f38ba8) "
+
+[os]
+disabled = false
+style = "bold #89b4fa"
+format = "[$symbol]($style)"
+
+[os.symbols]
+Fedora = "🐋 "
+Linux = "🐋 "
+
+[directory]
+style = "bold #89b4fa"
+format = "[$path]($style) "
+truncation_length = 4
+truncation_symbol = "…/"
+
+[git_branch]
+symbol = " "
+style = "bold #cba6f7"
+format = "[$symbol$branch]($style) "
+
+[git_status]
+style = "bold #f38ba8"
+format = "[$all_status$ahead_behind]($style) "
+
+[elixir]
+symbol = "💧 "
+style = "bold #cba6f7"
+format = "[$symbol($version )]($style)"
+
+[rust]
+symbol = "🦀 "
+style = "bold #fab387"
+format = "[$symbol($version )]($style)"
+
+[golang]
+symbol = "🐹 "
+style = "bold #89dceb"
+format = "[$symbol($version )]($style)"
+
+[nodejs]
+symbol = "⬢ "
+style = "bold #a6e3a1"
+format = "[$symbol($version )]($style)"
+
+[python]
+symbol = "🐍 "
+style = "bold #f9e2af"
+format = "[$symbol($version )]($style)"
+
+[cmd_duration]
+min_time = 2_000
+style = "bold #f9e2af"
+format = "took [$duration]($style) "

@@ -1,0 +1,64 @@
+#!/bin/bash
+set -euo pipefail
+
+# Orca OS - Curated Application Bundle Installer (Flatpak)
+
+BUNDLE="${1:-}"
+
+declare -A BUNDLES=(
+    ["dev"]="com.visualstudio.code dev.zed.Zed usebruno.Bruno io.dbeaver.DBeaverCommunity"
+    ["social"]="dev.vencord.Vesktop com.spotify.Client md.obsidian.Obsidian org.telegram.desktop"
+    ["office"]="org.libreoffice.LibreOffice com.github.xournalpp.xournalpp"
+    ["creative"]="org.gimp.GIMP org.inkscape.Inkscape com.obsproject.Studio"
+)
+
+declare -A BUNDLE_DESCS=(
+    ["dev"]="Developer Suite (VS Code, Zed, Bruno API client, DBeaver Database GUI)"
+    ["social"]="Communication & Notes (Vesktop/Discord, Spotify, Obsidian, Telegram)"
+    ["office"]="Office & Productivity (LibreOffice suite, Xournal++ PDF annotator)"
+    ["creative"]="Creative & Media (GIMP image editor, Inkscape vector, OBS Studio)"
+)
+
+install_bundle() {
+    local b_name="$1"
+    local apps="${BUNDLES[$b_name]}"
+    echo "📦 Installing $b_name bundle: ${BUNDLE_DESCS[$b_name]}..."
+    for app in $apps; do
+        echo "  • Installing $app from Flathub..."
+        flatpak install -y --noninteractive flathub "$app" || true
+    done
+    echo "✨ $b_name bundle installation completed!"
+}
+
+if [ -z "$BUNDLE" ]; then
+    echo "🐋 Orca OS — Curated Software Bundles"
+    echo "======================================"
+    echo "Select an application bundle to install from Flathub:"
+    echo "  1) dev      - ${BUNDLE_DESCS['dev']}"
+    echo "  2) social   - ${BUNDLE_DESCS['social']}"
+    echo "  3) office   - ${BUNDLE_DESCS['office']}"
+    echo "  4) creative - ${BUNDLE_DESCS['creative']}"
+    echo "  5) all      - Install all curated bundles"
+    echo ""
+    read -p "Choose bundle [1-5 or dev/social/office/creative/all]: " CHOICE
+
+    case "$CHOICE" in
+        1|dev) BUNDLE="dev" ;;
+        2|social) BUNDLE="social" ;;
+        3|office) BUNDLE="office" ;;
+        4|creative) BUNDLE="creative" ;;
+        5|all) BUNDLE="all" ;;
+        *) echo "Invalid choice. Aborted."; exit 0 ;;
+    esac
+fi
+
+if [ "$BUNDLE" = "all" ]; then
+    for b in dev social office creative; do
+        install_bundle "$b"
+    done
+elif [[ -v BUNDLES["$BUNDLE"] ]]; then
+    install_bundle "$BUNDLE"
+else
+    echo "❌ Unknown bundle '$BUNDLE'. Available: dev, social, office, creative, all"
+    exit 1
+fi

@@ -1,0 +1,7 @@
+# Orca Kanshi Multi-Monitor Profiles
+# Automatically manages screen layouts when plugging/unplugging monitors or docks.
+# See man 5 kanshi for configuration syntax.
+
+profile default {
+    output * enable
+}

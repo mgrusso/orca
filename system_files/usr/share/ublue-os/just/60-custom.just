@@ -56,10 +56,25 @@ orca-clean:
     #!/usr/bin/env bash
     orca-clean
 
-# Launch or create an instant Distrobox development container
-orca-dev-box name="orca-dev" image="ghcr.io/ublue-os/fedora-toolbox:latest":
+# Launch or create an isolated development container (e.g. 'elixir', 'fedora', 'arch', 'rust')
+orca-dev-box profile="":
     #!/usr/bin/env bash
-    orca-dev-box "{{name}}" "{{image}}"
+    orca-dev-box "{{profile}}"
+
+# Install curated Flatpak application bundles ('dev', 'social', 'office', 'creative', 'all')
+orca-apps bundle="":
+    #!/usr/bin/env bash
+    orca-apps "{{bundle}}"
+
+# Configure battery charge limit for longevity on laptops (e.g. 80)
+orca-battery-limit threshold="":
+    #!/usr/bin/env bash
+    orca-battery-limit "{{threshold}}"
+
+# Toggle or adjust Wayland Night Light / Blue Light Filter
+orca-nightlight action="toggle":
+    #!/usr/bin/env bash
+    orca-nightlight "{{action}}"
 
 # Restart PipeWire and WirePlumber audio services in case of sound or microphone issues
 orca-fix-audio:

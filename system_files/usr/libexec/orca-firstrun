@@ -53,6 +53,9 @@ fi
 if [ -n "$SYS_LAYOUT" ] && [ -f "$HOME/.config/niri/config.kdl" ]; then
     sed -i -E "s/layout \"[^\"]+\"/layout \"$SYS_LAYOUT\"/g" "$HOME/.config/niri/config.kdl" 2>/dev/null || true
 fi
+if [ -n "$SYS_LAYOUT" ] && [ -f "$HOME/.config/hypr/hyprland.conf" ]; then
+    sed -i -E "s/kb_layout = [a-zA-Z_-]+/kb_layout = $SYS_LAYOUT/g" "$HOME/.config/hypr/hyprland.conf" 2>/dev/null || true
+fi
 
 # Ensure automatic network time synchronization is enabled
 if command -v timedatectl >/dev/null 2>&1; then
@@ -65,13 +68,28 @@ if [ -f "/etc/skel/.config/ghostty/config" ]; then
     cp -f "/etc/skel/.config/ghostty/config" "$HOME/.config/ghostty/config"
 fi
 
-# 5. Seed Hyprland configuration
+# 5. Seed Hyprland & Hypridle configuration
 mkdir -p "$HOME/.config/hypr"
 if [ -f "/etc/skel/.config/hypr/hyprland.conf" ]; then
     cp -f "/etc/skel/.config/hypr/hyprland.conf" "$HOME/.config/hypr/hyprland.conf"
 fi
+if [ -f "/etc/skel/.config/hypr/hypridle.conf" ]; then
+    cp -f "/etc/skel/.config/hypr/hypridle.conf" "$HOME/.config/hypr/hypridle.conf"
+fi
 
-# 5b. Seed Fastfetch configuration
+# 5b. Seed SwayOSD, Kanshi and Starship configurations
+mkdir -p "$HOME/.config/swayosd" "$HOME/.config/kanshi"
+if [ -f "/etc/skel/.config/swayosd/style.css" ]; then
+    cp -f "/etc/skel/.config/swayosd/style.css" "$HOME/.config/swayosd/style.css"
+fi
+if [ -f "/etc/skel/.config/kanshi/config" ]; then
+    cp -f "/etc/skel/.config/kanshi/config" "$HOME/.config/kanshi/config"
+fi
+if [ -f "/etc/skel/.config/starship.toml" ]; then
+    cp -f "/etc/skel/.config/starship.toml" "$HOME/.config/starship.toml"
+fi
+
+# 5c. Seed Fastfetch configuration
 mkdir -p "$HOME/.config/fastfetch"
 if [ -f "/etc/skel/.config/fastfetch/config.jsonc" ]; then
     cp -f "/etc/skel/.config/fastfetch/config.jsonc" "$HOME/.config/fastfetch/config.jsonc"

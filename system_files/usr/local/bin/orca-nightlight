@@ -1,0 +1,69 @@
+#!/bin/bash
+set -euo pipefail
+
+# Orca OS - Wayland Night Light / Blue Light Filter (wlsunset)
+
+ACTION="${1:-toggle}"
+DEFAULT_LOW_TEMP="4000"
+DEFAULT_HIGH_TEMP="6500"
+
+is_running() {
+    pgrep -x wlsunset >/dev/null 2>&1
+}
+
+case "$ACTION" in
+    on|enable)
+        if ! is_running; then
+            wlsunset -t "$DEFAULT_LOW_TEMP" -T "$DEFAULT_HIGH_TEMP" >/dev/null 2>&1 &
+            if command -v notify-send >/dev/null 2>&1; then
+                notify-send "Orca Night Light" "Night Light enabled (${DEFAULT_LOW_TEMP}K)" -i display
+            fi
+            echo "🌙 Night Light enabled."
+        else
+            echo "Night Light is already active."
+        fi
+        ;;
+    off|disable)
+        if is_running; then
+            killall -q wlsunset || true
+            if command -v notify-send >/dev/null 2>&1; then
+                notify-send "Orca Night Light" "Night Light disabled" -i display
+            fi
+            echo "☀️ Night Light disabled."
+        else
+            echo "Night Light is not active."
+        fi
+        ;;
+    toggle)
+        if is_running; then
+            killall -q wlsunset || true
+            if command -v notify-send >/dev/null 2>&1; then
+                notify-send "Orca Night Light" "Night Light disabled" -i display
+            fi
+            echo "☀️ Night Light disabled."
+        else
+            wlsunset -t "$DEFAULT_LOW_TEMP" -T "$DEFAULT_HIGH_TEMP" >/dev/null 2>&1 &
+            if command -v notify-send >/dev/null 2>&1; then
+                notify-send "Orca Night Light" "Night Light enabled (${DEFAULT_LOW_TEMP}K)" -i display
+            fi
+            echo "🌙 Night Light enabled."
+        fi
+        ;;
+    status)
+        if is_running; then
+            echo "active"
+        else
+            echo "inactive"
+        fi
+        ;;
+    *)
+        if [[ "$ACTION" =~ ^[0-9]+$ ]]; then
+            killall -q wlsunset || true
+            wlsunset -t "$ACTION" -T "$DEFAULT_HIGH_TEMP" >/dev/null 2>&1 &
+            echo "🌙 Night Light set to ${ACTION}K."
+        else
+            echo "Usage: orca-nightlight [on|off|toggle|status|<kelvin>]"
+            exit 1
+        fi
+        ;;
+esac

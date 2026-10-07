@@ -4,23 +4,33 @@ LABEL org.opencontainers.image.title="Orca" \
       org.opencontainers.image.description="Bluefin customized with Niri, Noctalia Shell and Ghostty" \
       org.opencontainers.image.vendor="mgrusso"
 
-# Enable COPR repositories for Hyprland and Ghostty
+# Enable COPR repositories for Hyprland, Ghostty, SwayOSD, and Starship
 RUN (dnf5 -y copr enable lionheartp/Hyprland || dnf -y copr enable lionheartp/Hyprland || true) && \
     (dnf5 -y copr enable solopasha/hyprland || dnf -y copr enable solopasha/hyprland || true) && \
-    (dnf5 -y copr enable scottames/ghostty || dnf -y copr enable scottames/ghostty || true)
+    (dnf5 -y copr enable scottames/ghostty || dnf -y copr enable scottames/ghostty || true) && \
+    (dnf5 -y copr enable erikreider/swayosd || dnf -y copr enable erikreider/swayosd || true) && \
+    (dnf5 -y copr enable atim/starship || dnf -y copr enable atim/starship || true)
 
 # Install tiling window managers, terminal, desktop shell, utilities, wallpaper setter, and theming
 # (Note: Nautilus, GNOME integration, PipeWire, Power Profiles, Bluefin Wallpapers and Homebrew are native in bluefin:stable)
 RUN (rpm-ostree install \
         niri \
         hyprland \
+        hypridle \
+        swayosd \
         ghostty \
         noctalia \
         swaybg \
+        kanshi \
+        wlsunset \
+        cliphist \
+        fuzzel \
+        starship \
         brightnessctl \
         playerctl \
         wl-clipboard \
         mate-polkit \
+        gnome-keyring \
         grim \
         slurp \
         swappy \
@@ -33,13 +43,21 @@ RUN (rpm-ostree install \
     (dnf5 install -y \
         niri \
         hyprland \
+        hypridle \
+        swayosd \
         ghostty \
         noctalia \
         swaybg \
+        kanshi \
+        wlsunset \
+        cliphist \
+        fuzzel \
+        starship \
         brightnessctl \
         playerctl \
         wl-clipboard \
         mate-polkit \
+        gnome-keyring \
         grim \
         slurp \
         swappy \
@@ -89,7 +107,10 @@ RUN cp -rn /usr/share/plymouth/themes/spinner/* /usr/share/plymouth/themes/orca/
         fi \
     done
 
-# Make /etc/orca configuration directory writable so release channels can be managed without sudo
-RUN mkdir -p /etc/orca && chmod 777 /etc/orca && ( [ -f /etc/orca/release-channel ] && chmod 666 /etc/orca/release-channel || true )
+# Configure /etc/orca configuration directory permissions for wheel group
+RUN mkdir -p /etc/orca && \
+    (chown -R root:wheel /etc/orca 2>/dev/null || true) && \
+    chmod 775 /etc/orca && \
+    ( [ -f /etc/orca/release-channel ] && chmod 664 /etc/orca/release-channel || true )
 
 

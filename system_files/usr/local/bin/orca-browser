@@ -11,6 +11,13 @@ if [ -f "$CONFIG_FILE" ]; then
 fi
 
 case "$BROWSER" in
+    zen|io.github.zen_browser.zen)
+        if command -v zen >/dev/null 2>&1; then
+            exec zen "$@"
+        elif command -v flatpak >/dev/null 2>&1 && flatpak info io.github.zen_browser.zen >/dev/null 2>&1; then
+            exec flatpak run io.github.zen_browser.zen "$@"
+        fi
+        ;;
     brave|com.brave.Browser)
         if command -v brave-browser >/dev/null 2>&1; then
             exec brave-browser "$@"

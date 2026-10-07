@@ -42,8 +42,18 @@ if [ -n "$HOME" ] && [ ! -f "$GHOSTTY_CONF" ]; then
     fi
 fi
 
-# 5. Interactive Terminal Welcome Banner (Fastfetch)
+# 5. GNOME Keyring SSH agent socket
+if [ -z "${SSH_AUTH_SOCK:-}" ] && [ -n "${XDG_RUNTIME_DIR:-}" ]; then
+    export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/keyring/ssh"
+fi
+
+# 6. Interactive Terminal Welcome Banner (Fastfetch)
 if [ -t 1 ] && [ "${SHLVL:-1}" -le 2 ] && [ -z "${ORCA_FETCH_SHOWN:-}" ] && command -v fastfetch >/dev/null 2>&1; then
     export ORCA_FETCH_SHOWN=1
     fastfetch
+fi
+
+# 7. Starship Prompt Initialization
+if [ -t 1 ] && command -v starship >/dev/null 2>&1; then
+    eval "$(starship init bash)"
 fi
