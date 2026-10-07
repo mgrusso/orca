@@ -39,13 +39,15 @@ jobs:
           echo "IMAGE_REGISTRY=${IMAGE_REGISTRY,,}" >> $GITHUB_ENV
           echo "IMAGE_NAME=${IMAGE_NAME,,}" >> $GITHUB_ENV
 
-      - name: Determine image tags
+      - name: Determine image tags and version
         id: tags
         run: |
+          SHA_SHORT="${GITHUB_SHA::7}"
           if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
             VERSION="${GITHUB_REF#refs/tags/}"
             CLEAN_VERSION="${VERSION#v}"
             MAJOR_MINOR=$(echo "$CLEAN_VERSION" | cut -d. -f1,2)
+            echo "orca_version=${VERSION}" >> $GITHUB_OUTPUT
             {
               echo "tags<<EOF"
               echo "${VERSION}"
@@ -55,6 +57,7 @@ jobs:
               echo "EOF"
             } >> $GITHUB_OUTPUT
           else
+            echo "orca_version=latest-${SHA_SHORT}" >> $GITHUB_OUTPUT
             {
               echo "tags<<EOF"
               echo "latest"
@@ -68,6 +71,8 @@ jobs:
         with:
           image: ${{ env.IMAGE_NAME }}
           tags: ${{ steps.tags.outputs.tags }}
+          build-args: |
+            ORCA_VERSION=${{ steps.tags.outputs.orca_version }}
           containerfiles: |
             ./Containerfile
           oci: true

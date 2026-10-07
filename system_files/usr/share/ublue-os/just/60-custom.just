@@ -95,6 +95,10 @@ orca-fix-audio:
 # Display Orca OS system and hardware information
 orca-info:
     #!/usr/bin/env bash
+    if [ -f /etc/orca-release ]; then
+        echo "🐋 Orca OS Version: $(cat /etc/orca-release)"
+        echo "──────────────────────────────────────────────"
+    fi
     if command -v fastfetch >/dev/null 2>&1; then
         fastfetch
     else

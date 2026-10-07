@@ -4,11 +4,10 @@ LABEL org.opencontainers.image.title="Orca" \
       org.opencontainers.image.description="Bluefin customized with Niri, Noctalia Shell and Ghostty" \
       org.opencontainers.image.vendor="mgrusso"
 
-# Enable COPR repositories for Hyprland, Ghostty, SwayOSD, and Starship
+# Enable COPR repositories for Hyprland, Ghostty, and Starship
 RUN (dnf5 -y copr enable lionheartp/Hyprland || dnf -y copr enable lionheartp/Hyprland || true) && \
     (dnf5 -y copr enable solopasha/hyprland || dnf -y copr enable solopasha/hyprland || true) && \
     (dnf5 -y copr enable scottames/ghostty || dnf -y copr enable scottames/ghostty || true) && \
-    (dnf5 -y copr enable erikreider/swayosd || dnf -y copr enable erikreider/swayosd || true) && \
     (dnf5 -y copr enable atim/starship || dnf -y copr enable atim/starship || true)
 
 # Install tiling window managers, terminal, desktop shell, utilities, wallpaper setter, and theming
@@ -17,7 +16,6 @@ RUN (rpm-ostree install \
         niri \
         hyprland \
         hypridle \
-        swayosd \
         ghostty \
         noctalia \
         swaybg \
@@ -44,7 +42,6 @@ RUN (rpm-ostree install \
         niri \
         hyprland \
         hypridle \
-        swayosd \
         ghostty \
         noctalia \
         swaybg \
@@ -86,9 +83,14 @@ RUN chmod +x /usr/libexec/orca-firstrun /usr/local/bin/*
 # Compile gsettings schema overrides for system-wide dark mode & theming
 RUN glib-compile-schemas /usr/share/glib-2.0/schemas/
 
-# Brand the operating system as Orca in os-release for bootloader, hostnamectl, and fastfetch
-RUN sed -i -e 's/^NAME=.*/NAME="Orca"/' \
-           -e 's/^PRETTY_NAME=.*/PRETTY_NAME="Orca (Bluefin)"/' \
+# Brand the operating system as Orca in os-release and /etc/orca-release
+ARG ORCA_VERSION="devel"
+RUN echo "${ORCA_VERSION}" > /etc/orca-release && \
+    chmod 644 /etc/orca-release && \
+    sed -i -e 's/^NAME=.*/NAME="Orca"/' \
+           -e "s/^PRETTY_NAME=.*/PRETTY_NAME=\"Orca (${ORCA_VERSION})\"/" \
+           -e "s/^VERSION=.*/VERSION=\"${ORCA_VERSION}\"/" \
+           -e "s/^VERSION_ID=.*/VERSION_ID=\"${ORCA_VERSION}\"/" \
            /usr/lib/os-release
 
 # Clean upstream Bluefin MOTD banners and neutralize umotd & user-motd

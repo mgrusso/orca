@@ -77,11 +77,8 @@ if [ -f "/etc/skel/.config/hypr/hypridle.conf" ]; then
     cp -f "/etc/skel/.config/hypr/hypridle.conf" "$HOME/.config/hypr/hypridle.conf"
 fi
 
-# 5b. Seed SwayOSD, Kanshi and Starship configurations
-mkdir -p "$HOME/.config/swayosd" "$HOME/.config/kanshi"
-if [ -f "/etc/skel/.config/swayosd/style.css" ]; then
-    cp -f "/etc/skel/.config/swayosd/style.css" "$HOME/.config/swayosd/style.css"
-fi
+# 5b. Seed Kanshi and Starship configurations
+mkdir -p "$HOME/.config/kanshi"
 if [ -f "/etc/skel/.config/kanshi/config" ]; then
     cp -f "/etc/skel/.config/kanshi/config" "$HOME/.config/kanshi/config"
 fi

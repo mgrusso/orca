@@ -13,17 +13,16 @@ if [[ ! "$confirm" =~ ^[yY]$ ]]; then
 fi
 
 echo "Cleaning local user configuration files..."
-rm -rf "$HOME/.config/niri" "$HOME/.config/noctalia" "$HOME/.config/ghostty" "$HOME/.config/hypr" "$HOME/.config/fastfetch" "$HOME/.config/swayosd" "$HOME/.config/kanshi" "$HOME/.config/starship.toml" "$HOME/.local/state/noctalia" 2>/dev/null || true
+rm -rf "$HOME/.config/niri" "$HOME/.config/noctalia" "$HOME/.config/ghostty" "$HOME/.config/hypr" "$HOME/.config/fastfetch" "$HOME/.config/kanshi" "$HOME/.config/starship.toml" "$HOME/.local/state/noctalia" 2>/dev/null || true
 
 # Re-seed from /etc/skel
-mkdir -p "$HOME/.config/niri" "$HOME/.config/noctalia" "$HOME/.config/ghostty" "$HOME/.config/hypr" "$HOME/.config/fastfetch" "$HOME/.config/swayosd" "$HOME/.config/kanshi" "$HOME/.local/state/noctalia"
+mkdir -p "$HOME/.config/niri" "$HOME/.config/noctalia" "$HOME/.config/ghostty" "$HOME/.config/hypr" "$HOME/.config/fastfetch" "$HOME/.config/kanshi" "$HOME/.local/state/noctalia"
 
 [ -f "/etc/skel/.config/niri/config.kdl" ] && cp -f "/etc/skel/.config/niri/config.kdl" "$HOME/.config/niri/config.kdl"
 [ -f "/etc/skel/.config/noctalia/config.toml" ] && cp -f "/etc/skel/.config/noctalia/config.toml" "$HOME/.config/noctalia/config.toml"
 [ -f "/etc/skel/.config/ghostty/config" ] && cp -f "/etc/skel/.config/ghostty/config" "$HOME/.config/ghostty/config"
 [ -f "/etc/skel/.config/hypr/hyprland.conf" ] && cp -f "/etc/skel/.config/hypr/hyprland.conf" "$HOME/.config/hypr/hyprland.conf"
 [ -f "/etc/skel/.config/hypr/hypridle.conf" ] && cp -f "/etc/skel/.config/hypr/hypridle.conf" "$HOME/.config/hypr/hypridle.conf"
-[ -f "/etc/skel/.config/swayosd/style.css" ] && cp -f "/etc/skel/.config/swayosd/style.css" "$HOME/.config/swayosd/style.css"
 [ -f "/etc/skel/.config/kanshi/config" ] && cp -f "/etc/skel/.config/kanshi/config" "$HOME/.config/kanshi/config"
 [ -f "/etc/skel/.config/starship.toml" ] && cp -f "/etc/skel/.config/starship.toml" "$HOME/.config/starship.toml"
 [ -f "/etc/skel/.config/fastfetch/config.jsonc" ] && cp -f "/etc/skel/.config/fastfetch/config.jsonc" "$HOME/.config/fastfetch/config.jsonc"
