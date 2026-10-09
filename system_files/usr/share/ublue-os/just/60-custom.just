@@ -1,7 +1,7 @@
 # Orca OS Custom Management Recipes
 # Powering 'ujust orca-*' commands
 
-# Configure the active Orca OS release channel (e.g. '0.2', '0.1' or 'latest')
+# Configure the active Orca OS release channel (e.g. '0.3', '0.2' or 'latest')
 orca-release-channel channel="":
     #!/usr/bin/env bash
     orca-release-channel "{{channel}}"
