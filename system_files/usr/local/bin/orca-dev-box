@@ -18,7 +18,7 @@ EXTRA_FLAGS=()
 case "$PROFILE" in
     elixir|phoenix|beam)
         BOX_NAME="orca-elixir"
-        BOX_IMAGE="docker.io/hexpm/elixir:latest"
+        BOX_IMAGE="docker.io/library/elixir:latest"
         ;;
     fedora|default|"")
         if [ "$PROFILE" = "fedora" ] || [ -n "$CUSTOM_IMAGE" ]; then
@@ -50,7 +50,7 @@ if [ -z "$BOX_NAME" ]; then
     echo "🐋 Orca OS — Development Environments (Distrobox)"
     echo "================================================="
     echo "Select a preconfigured development container:"
-    echo "  1) elixir   - Elixir, Erlang OTP & Hex (hexpm/elixir)"
+    echo "  1) elixir   - Elixir, Erlang OTP & Hex (Official elixir image)"
     echo "  2) fedora   - Fedora Toolbox (Standard Universal Blue base)"
     echo "  3) arch     - Arch Linux (Bleeding Edge & AUR access)"
     echo "  4) rust     - Rust Toolchain (Official rust image)"
@@ -62,7 +62,7 @@ if [ -z "$BOX_NAME" ]; then
     case "$CHOICE" in
         1|elixir)
             BOX_NAME="orca-elixir"
-            BOX_IMAGE="docker.io/hexpm/elixir:latest"
+            BOX_IMAGE="docker.io/library/elixir:latest"
             ;;
         2|fedora)
             BOX_NAME="orca-fedora"
