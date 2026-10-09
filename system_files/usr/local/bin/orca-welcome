@@ -34,8 +34,15 @@ def get_current_default_browser():
                     return val
         except Exception:
             pass
-    return "firefox"
-
+    for b_id, ref in [
+        ("firefox", "org.mozilla.firefox"),
+        ("zen", "io.github.zen_browser.zen"),
+        ("brave", "com.brave.Browser"),
+        ("vivaldi", "com.vivaldi.Vivaldi"),
+    ]:
+        if is_flatpak_installed(ref):
+            return b_id
+    return ""
 
 def set_default_browser(browser_id, desktop_file=None):
     os.makedirs(CONFIG_DIR, exist_ok=True)
@@ -474,7 +481,7 @@ class OrcaWelcomeWindow(Adw.ApplicationWindow):
         grp.set_description("Choose your preferred browser. Super + B will immediately launch your selected default.")
 
         browsers = [
-            ("firefox", "Mozilla Firefox", "org.mozilla.firefox.desktop", "org.mozilla.firefox", "Pre-installed Flatpak configured with Orca dark mode.", True),
+            ("firefox", "Mozilla Firefox", "org.mozilla.firefox.desktop", "org.mozilla.firefox", "Standard privacy browser with extensive extension ecosystem.", False),
             ("zen", "Zen Browser", "io.github.zen_browser.zen.desktop", "io.github.zen_browser.zen", "Modern Firefox fork with vertical tabs, workspaces, and sleek styling.", False),
             ("brave", "Brave Browser", "com.brave.Browser.desktop", "com.brave.Browser", "Privacy-focused Chromium with built-in ad blocking.", False),
             ("vivaldi", "Vivaldi Browser", "com.vivaldi.Vivaldi.desktop", "com.vivaldi.Vivaldi", "Power-user browser with tab stacks and split-view.", False),
@@ -494,17 +501,14 @@ class OrcaWelcomeWindow(Adw.ApplicationWindow):
             btn_default = Gtk.Button(label="✓ Default (Super+B)" if current_def == b_id else "Set Default")
             if current_def == b_id:
                 btn_default.add_css_class("suggested-action")
-            btn_default.connect("clicked", self.create_set_default_handler(b_id, b_desktop))
+            btn_default.connect("clicked", self.create_set_default_handler(b_id, b_desktop, app_ref, b_name))
             self.browser_buttons[b_id] = btn_default
             btn_box.append(btn_default)
 
             # Launch or Install action button
-            if is_preinstalled or is_flatpak_installed(app_ref):
+            if is_flatpak_installed(app_ref):
                 btn_launch = Gtk.Button(label="Launch")
-                if is_preinstalled:
-                    btn_launch.connect("clicked", lambda b: subprocess.Popen(["firefox"]))
-                else:
-                    btn_launch.connect("clicked", lambda b, ref=app_ref: subprocess.Popen(["flatpak", "run", ref]))
+                btn_launch.connect("clicked", lambda b, ref=app_ref: subprocess.Popen(["flatpak", "run", ref]))
                 btn_box.append(btn_launch)
             else:
                 btn_install = Gtk.Button(label="Install")
@@ -518,7 +522,7 @@ class OrcaWelcomeWindow(Adw.ApplicationWindow):
         wrapped = self.wrap_page(pref_page, max_width=720)
         self.stack.add_named(wrapped, "browser")
 
-    def create_set_default_handler(self, browser_id, desktop_file):
+    def create_set_default_handler(self, browser_id, desktop_file, app_ref, browser_name):
         def handler(btn):
             set_default_browser(browser_id, desktop_file)
             for b_key, b_btn in self.browser_buttons.items():
@@ -528,6 +532,8 @@ class OrcaWelcomeWindow(Adw.ApplicationWindow):
                 else:
                     b_btn.set_label("Set Default")
                     b_btn.remove_css_class("suggested-action")
+            if not is_flatpak_installed(app_ref):
+                launch_or_install_browser(app_ref, browser_name)
         return handler
 
     def build_page_shortcuts(self):

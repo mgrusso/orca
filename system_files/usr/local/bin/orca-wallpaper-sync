@@ -26,10 +26,17 @@ fi
 
 # 2. Extract Accent Color
 ACCENT=$(python3 -c "
-import sys
+import io, subprocess, sys
 try:
     from PIL import Image
-    img = Image.open('$WALLPAPER')
+    try:
+        img = Image.open('$WALLPAPER')
+    except Exception:
+        proc = subprocess.run(['magick', '$WALLPAPER', '-resize', '50x50', 'png:-'], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        if proc.returncode == 0:
+            img = Image.open(io.BytesIO(proc.stdout))
+        else:
+            raise
     img = img.resize((50, 50))
     colors = img.getcolors(50 * 50) or []
     colors.sort(key=lambda c: c[0], reverse=True)

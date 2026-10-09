@@ -16,8 +16,7 @@ directory_dark = "/usr/share/backgrounds/bluefin"
 fill_mode = "crop"
 
 [wallpaper.default]
-path = "/usr/share/backgrounds/bluefin/bluefin_night.jxl"
-
+path = "/usr/share/backgrounds/bluefin/01-bluefin-night.jxl"
 [bar.top]
 position = "top"
 thickness = 36

@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       image_tag:
-        description: 'Image tag to package into the ISO (e.g. v0.2, v0.2.12, latest)'
+        description: 'Image tag to package into the ISO (e.g. v0.3, v0.3.0, latest)'
         required: true
-        default: 'v0.2'
+        default: 'v0.3'
       existing_run_id:
         description: 'Optional: Use existing artifact from this run ID instead of rebuilding from scratch'
         required: false

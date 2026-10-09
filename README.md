@@ -33,7 +33,7 @@ Bootable installation images (`.iso`) are hosted on high-speed S3 storage and li
    * **Ventoy** (Copy the `.iso` file directly onto your Ventoy USB drive)
    * Command line (`dd`):
      ```bash
-     sudo dd if=orca-v0.2.12-x86_64.iso of=/dev/sdX bs=4M status=progress oflag=sync
+     sudo dd if=orca-v0.3.0-x86_64.iso of=/dev/sdX bs=4M status=progress oflag=sync
      ```
 3. Insert the USB drive into your computer, boot from USB (typically via `F12`, `F11`, or `Del` at startup), and follow the Anaconda installer to install Orca OS.
 
@@ -48,8 +48,8 @@ Bootable installation images (`.iso`) are hosted on high-speed S3 storage and li
 If you already run a bootc- or rpm-ostree-based system (Fedora Silverblue, Kinoite, Aurora, or Bluefin), you can switch to Orca with a single command:
 
 ```bash
-# Rebase to Orca OS (Stable 0.2 Channel)
-sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/mgrusso/orca:v0.2
+# Rebase to Orca OS (Stable 0.3 Channel)
+sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/mgrusso/orca:v0.3
 
 # Reboot into Orca OS
 sudo systemctl reboot

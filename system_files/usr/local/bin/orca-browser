@@ -5,47 +5,78 @@ set -euo pipefail
 
 CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/orca/default-browser"
 
-BROWSER="firefox"
+launch_browser() {
+    local b="$1"
+    shift
+    case "$b" in
+        zen|io.github.zen_browser.zen)
+            if command -v zen >/dev/null 2>&1; then
+                exec zen "$@"
+            elif command -v flatpak >/dev/null 2>&1 && flatpak info io.github.zen_browser.zen >/dev/null 2>&1; then
+                exec flatpak run io.github.zen_browser.zen "$@"
+            fi
+            ;;
+        brave|com.brave.Browser)
+            if command -v brave-browser >/dev/null 2>&1; then
+                exec brave-browser "$@"
+            elif command -v flatpak >/dev/null 2>&1 && flatpak info com.brave.Browser >/dev/null 2>&1; then
+                exec flatpak run com.brave.Browser "$@"
+            fi
+            ;;
+        vivaldi|com.vivaldi.Vivaldi)
+            if command -v vivaldi >/dev/null 2>&1; then
+                exec vivaldi "$@"
+            elif command -v flatpak >/dev/null 2>&1 && flatpak info com.vivaldi.Vivaldi >/dev/null 2>&1; then
+                exec flatpak run com.vivaldi.Vivaldi "$@"
+            fi
+            ;;
+        firefox|org.mozilla.firefox)
+            if command -v flatpak >/dev/null 2>&1 && flatpak info org.mozilla.firefox >/dev/null 2>&1; then
+                exec flatpak run org.mozilla.firefox "$@"
+            elif [ -x /usr/bin/firefox ]; then
+                exec /usr/bin/firefox "$@"
+            fi
+            ;;
+        chrome|com.google.Chrome)
+            if command -v google-chrome >/dev/null 2>&1; then
+                exec google-chrome "$@"
+            elif command -v flatpak >/dev/null 2>&1 && flatpak info com.google.Chrome >/dev/null 2>&1; then
+                exec flatpak run com.google.Chrome "$@"
+            fi
+            ;;
+        chromium|org.chromium.Chromium)
+            if command -v chromium-browser >/dev/null 2>&1; then
+                exec chromium-browser "$@"
+            elif command -v chromium >/dev/null 2>&1; then
+                exec chromium "$@"
+            elif command -v flatpak >/dev/null 2>&1 && flatpak info org.chromium.Chromium >/dev/null 2>&1; then
+                exec flatpak run org.chromium.Chromium "$@"
+            fi
+            ;;
+    esac
+    return 1
+}
+
+# 1. Try launching explicitly configured browser
 if [ -f "$CONFIG_FILE" ]; then
-    BROWSER=$(cat "$CONFIG_FILE" | tr -d '[:space:]')
+    CONFIGURED_BROWSER=$(tr -d '[:space:]' < "$CONFIG_FILE")
+    if [ -n "$CONFIGURED_BROWSER" ]; then
+        launch_browser "$CONFIGURED_BROWSER" "$@" || true
+    fi
 fi
 
-case "$BROWSER" in
-    zen|io.github.zen_browser.zen)
-        if command -v zen >/dev/null 2>&1; then
-            exec zen "$@"
-        elif command -v flatpak >/dev/null 2>&1 && flatpak info io.github.zen_browser.zen >/dev/null 2>&1; then
-            exec flatpak run io.github.zen_browser.zen "$@"
-        fi
-        ;;
-    brave|com.brave.Browser)
-        if command -v brave-browser >/dev/null 2>&1; then
-            exec brave-browser "$@"
-        elif command -v flatpak >/dev/null 2>&1 && flatpak info com.brave.Browser >/dev/null 2>&1; then
-            exec flatpak run com.brave.Browser "$@"
-        fi
-        ;;
-    vivaldi|com.vivaldi.Vivaldi)
-        if command -v vivaldi >/dev/null 2>&1; then
-            exec vivaldi "$@"
-        elif command -v flatpak >/dev/null 2>&1 && flatpak info com.vivaldi.Vivaldi >/dev/null 2>&1; then
-            exec flatpak run com.vivaldi.Vivaldi "$@"
-        fi
-        ;;
-    firefox|org.mozilla.firefox)
-        if command -v firefox >/dev/null 2>&1; then
-            exec firefox "$@"
-        elif command -v flatpak >/dev/null 2>&1 && flatpak info org.mozilla.firefox >/dev/null 2>&1; then
-            exec flatpak run org.mozilla.firefox "$@"
-        fi
-        ;;
-esac
+# 2. Fallback: Search for any installed browser
+for candidate in firefox zen brave vivaldi chrome chromium; do
+    launch_browser "$candidate" "$@" || true
+done
 
-# Fallback: Try launching via xdg-open or standard firefox
-if command -v firefox >/dev/null 2>&1; then
-    exec firefox "$@"
-elif command -v flatpak >/dev/null 2>&1 && flatpak info org.mozilla.firefox >/dev/null 2>&1; then
-    exec flatpak run org.mozilla.firefox "$@"
+# 3. Fallback: Open welcome wizard or notification if no browser is installed
+if command -v notify-send >/dev/null 2>&1; then
+    notify-send "Orca OS" "No web browser installed yet. Opening browser setup..." -i web-browser
+fi
+
+if command -v orca-welcome >/dev/null 2>&1; then
+    exec orca-welcome
 elif command -v xdg-open >/dev/null 2>&1; then
     exec xdg-open "https://"
 fi

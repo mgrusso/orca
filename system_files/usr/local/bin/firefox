@@ -1,3 +1,9 @@
 #!/bin/sh
 # Transparent wrapper to launch Flatpak Firefox from CLI or window manager
-exec flatpak run org.mozilla.firefox "$@"
+if command -v flatpak >/dev/null 2>&1 && flatpak info org.mozilla.firefox >/dev/null 2>&1; then
+    exec flatpak run org.mozilla.firefox "$@"
+elif [ -x /usr/bin/firefox ]; then
+    exec /usr/bin/firefox "$@"
+else
+    exec orca-browser "$@"
+fi

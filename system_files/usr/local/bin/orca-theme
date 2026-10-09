@@ -34,9 +34,9 @@ case "$THEME" in
         GHOSTTY_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/config"
         if [ -f "$GHOSTTY_CONF" ]; then
             if grep -q "theme =" "$GHOSTTY_CONF"; then
-                sed -i 's/^theme = .*/theme = catppuccin-mocha/' "$GHOSTTY_CONF"
+                sed -i 's/^theme = .*/theme = Catppuccin Mocha/' "$GHOSTTY_CONF"
             else
-                echo "theme = catppuccin-mocha" >> "$GHOSTTY_CONF"
+                echo "theme = Catppuccin Mocha" >> "$GHOSTTY_CONF"
             fi
         fi
 
@@ -48,7 +48,7 @@ case "$THEME" in
 
         # 4. Noctalia Shell
         if command -v noctalia >/dev/null 2>&1; then
-            noctalia msg color-scheme dark 2>/dev/null || true
+            noctalia msg theme-mode-set dark 2>/dev/null || true
         fi
 
         # 5. Flatpak Firefox
@@ -72,9 +72,9 @@ case "$THEME" in
         GHOSTTY_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/config"
         if [ -f "$GHOSTTY_CONF" ]; then
             if grep -q "theme =" "$GHOSTTY_CONF"; then
-                sed -i 's/^theme = .*/theme = catppuccin-latte/' "$GHOSTTY_CONF"
+                sed -i 's/^theme = .*/theme = Catppuccin Latte/' "$GHOSTTY_CONF"
             else
-                echo "theme = catppuccin-latte" >> "$GHOSTTY_CONF"
+                echo "theme = Catppuccin Latte" >> "$GHOSTTY_CONF"
             fi
         fi
 
@@ -86,7 +86,7 @@ case "$THEME" in
 
         # 4. Noctalia Shell
         if command -v noctalia >/dev/null 2>&1; then
-            noctalia msg color-scheme light 2>/dev/null || true
+            noctalia msg theme-mode-set light 2>/dev/null || true
         fi
 
         # 5. Flatpak Firefox
