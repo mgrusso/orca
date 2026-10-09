@@ -83,18 +83,6 @@ jobs:
             echo "Pulling image into local container storage..."
             sudo podman pull "$FULL_IMAGE"
 
-            # Setup distro definitions for bootc-image-builder so derivative IDs/tags resolve properly
-            mkdir -p "$PWD/defs"
-            sudo podman run --rm \
-              --entrypoint /bin/sh \
-              -v "$PWD/defs:/defs:z" \
-              quay.io/centos-bootc/bootc-image-builder:latest \
-              -c 'cp -a /usr/share/bootc-image-builder/defs/* /defs/ && \
-                  ln -sf fedora-40.yaml /defs/bluefin-${{ inputs.image_tag }}.yaml && \
-                  ln -sf fedora-40.yaml /defs/orca-${{ inputs.image_tag }}.yaml && \
-                  ln -sf fedora-40.yaml /defs/bluefin-44.yaml && \
-                  ln -sf fedora-40.yaml /defs/orca-44.yaml'
-
             sudo podman run \
               --rm \
               --privileged \
@@ -102,7 +90,6 @@ jobs:
               --security-opt label=type:unconfined_t \
               -v /var/lib/containers/storage:/var/lib/containers/storage \
               -v "$PWD/config.toml:/config.toml:ro" \
-              -v "$PWD/defs:/usr/share/bootc-image-builder/defs:ro" \
               -v "$PWD/output:/output" \
               quay.io/centos-bootc/bootc-image-builder:latest \
               --type anaconda-iso \

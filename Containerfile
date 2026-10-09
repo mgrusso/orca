@@ -89,8 +89,6 @@ RUN echo "${ORCA_VERSION}" > /etc/orca-release && \
     chmod 644 /etc/orca-release && \
     sed -i -e 's/^NAME=.*/NAME="Orca"/' \
            -e "s/^PRETTY_NAME=.*/PRETTY_NAME=\"Orca (${ORCA_VERSION})\"/" \
-           -e "s/^VERSION=.*/VERSION=\"${ORCA_VERSION}\"/" \
-           -e "s/^VERSION_ID=.*/VERSION_ID=\"${ORCA_VERSION}\"/" \
            /usr/lib/os-release
 
 # Clean upstream Bluefin MOTD banners and neutralize umotd & user-motd
